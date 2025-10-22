@@ -75,12 +75,30 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             cout << "NameError: Variable \"" << var << "\" not found." << endl;
             exit(0);
         }
-        cin >> vars[var].value;
+        string s;
+        cin >> s;
+        if (vars[var].type == "int") {
+            for (auto i : s) {
+                if (!(i >= '0' && i <= '9')) {
+                    cout << "Stroke: " << stroke << endl;
+                    cout << "TypeError: \"" << s << "\" is not int." << endl;
+                    exit(0);
+                }
+            }
+        }
+        if (vars[var].type == "bool") {
+            if (s != "true" and s != "false") {
+                cout << "Stroke: " << stroke << endl;
+                cout << "TypeError: \"" << s << "\" is not bool." << endl;
+                exit(0);
+            }
+        }
+        vars[var].value = s;
     }
     else if (namef == "create") {
         string type = func_args[0].value;
         string name = func_args[1].value;
-        if (type != "int" and type != "string") {
+        if (type != "int" and type != "string" and type != "bool") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Type of data \"" << type << "\" does not exist." << endl;
             exit(0);
@@ -95,7 +113,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             cout << "NameError: Variable \"" << var.value << "\" not found." << endl;
             exit(0);
         }
-        if (func_args[1].type == "variable") {
+        if (val.type == "variable") {
             if (vars.find(val.value) == vars.end()) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "NameError: Variable \"" << val.value << "\" not found." << endl;
@@ -146,14 +164,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             n = num;
         }
 
-        for (auto i : n.value) {
-            if (!(i >= '0' and i <= '9')) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "SyntaxError: Cannot convert \"" << n.value << "\" to int." << endl;
-                exit(0);
+        if (n.type == "bool") {
+            if (n.value == "true") {
+                vars[var.value].value = "1";
+            }
+            else if (n.value == "false") {
+                vars[var.value].value = "0";
             }
         }
-        vars[var.value] = n;
+        else {
+            for (auto i : n.value) {
+                if (!(i >= '0' and i <= '9')) {
+                    cout << "Stroke: " << stroke << endl;
+                    cout << "SyntaxError: Cannot convert \"" << n.value << "\" to int." << endl;
+                    exit(0);
+                }
+            }
+
+            vars[var.value] = n;
+        }
     }
     else if (namef == "to_string") {
         elem var = func_args[0];
@@ -540,8 +569,8 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else {
         ll i = 0;
-        for (auto [name, arguments] : funcs[namef]) {
-            run(name, arguments, strokes[namef][i]);
+        for (auto e : funcs[namef]) {
+            run(e.first, e.second, strokes[namef][i]);
             i++;
         }
     }
@@ -555,7 +584,13 @@ vector <elem> string_to_args(string str, ll stroke) {
     for (int i = 0; i < str.size(); i++) {
         if (i == 0) continue;
         if (str[i] == ' ' and !is_string) {
-            ans.push_back({ type, value });
+            if (type == "variable" and (value == "true" or value == "false")) {
+                ans.push_back({ "bool", value });
+            }
+            else {
+                ans.push_back({ type, value });
+            }
+
             type = "";
             value = "";
         }
@@ -593,6 +628,7 @@ int main() {
     ifstream fin("input.txt");
 
     ios_base::sync_with_stdio(false);
+    fin.tie(nullptr);
     cin.tie(nullptr);
     cout.tie(nullptr);
 
@@ -646,7 +682,7 @@ int main() {
             string args_str;
             getline(fin, args_str);
             vector <elem> f_args = string_to_args(args_str, stroke);
-            funcs[namef].emplace_back( str, f_args );
+            funcs[namef].emplace_back(str, f_args);
             strokes[namef].push_back(stroke);
         }
     }

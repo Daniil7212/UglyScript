@@ -1,10 +1,13 @@
+func p
+    plus a a b
+endf
+
 func main
     # a + b
-    create int a
-    input a
-    create int b
-    input b
+    create bool a
+    set a false
+    create string b
+    to_string b a
 
-    plus a a b
-    print a
+    print b
 endf
