@@ -1,0 +1,10 @@
+func main
+    # a + b
+    create int a
+    input a
+    create int b
+    input b
+
+    plus a a b
+    print a
+endf
