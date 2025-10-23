@@ -30,11 +30,18 @@ void init_common_functions() {
     args["delete"] = 1;
     args["to_int"] = 2;
     args["to_string"] = 2;
+    args["pass"] = 0;
     args["plus"] = 3;
     args["minus"] = 3;
     args["multiply"] = 3;
     args["divide"] = 3;
     args["remainder"] = 3;
+    args["equal"] = 3;
+    args["not"] = 2;
+    args["<"] = 3;
+    args["<="] = 3;
+    args[">"] = 3;
+    args[">="] = 3;
 }
 
 void run(string namef, vector <elem> func_args, ll stroke) {
@@ -211,6 +218,9 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
 
         vars[var.value] = n;
+    }
+    else if (namef == "pass") {
+        int tyehane = 0;
     }
     else if (namef == "plus") {
         string var = func_args[0].value;
@@ -567,6 +577,406 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = to_string(stoll(a.value) % stoll(b.value));
         }
     }
+    else if (namef == "equal") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+
+        if (vars.find(var) == vars.end()) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "NameError: Variable \"" << var << "\" not found." << endl;
+            exit(0);
+        }
+        if (type != "bool") {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            a.type = vars[a.value].type;
+
+            if (vars.find(a.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            a.value = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            b.type = vars[b.value].type;
+
+            if (vars.find(b.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            b.value = vars[b.value].value;
+        }
+
+        if (a.type != b.type) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            exit(0);
+        }
+
+        if (a.value == b.value) {
+            vars[var].value = "true";
+        }
+        else {
+            vars[var].value = "false";
+        }
+    }
+    else if (namef == "not") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+
+        if (vars.find(var) == vars.end()) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "NameError: Variable \"" << var << "\" not found." << endl;
+            exit(0);
+        }
+        if (type != "bool") {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            a.type = vars[a.value].type;
+
+            if (vars.find(a.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            a.value = vars[a.value].value;
+        }
+
+        if (a.type != "bool") {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            exit(0);
+        }
+
+        if (a.value == "true") {
+            vars[var].value = "false";
+        }
+        else {
+            vars[var].value = "true";
+        }
+    }
+    else if (namef == "<") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+
+        if (vars.find(var) == vars.end()) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "NameError: Variable \"" << var << "\" not found." << endl;
+            exit(0);
+        }
+        if (type != "bool") {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            a.type = vars[a.value].type;
+
+            if (vars.find(a.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            a.value = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            b.type = vars[b.value].type;
+
+            if (vars.find(b.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            b.value = vars[b.value].value;
+        }
+
+        if (a.type != b.type) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            exit(0);
+        }
+
+        if (a.type == "string") {
+            if (a.value < b.value) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "int") {
+            if (stoi(a.value) < stoi(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "bool") {
+            int a1 = 0, a2 = 0;
+            a1 = (a.value == "true");
+            a2 = (b.value == "true");
+            if (a1 < a2) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+    }
+    else if (namef == "<=") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+
+        if (vars.find(var) == vars.end()) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "NameError: Variable \"" << var << "\" not found." << endl;
+            exit(0);
+        }
+        if (type != "bool") {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            a.type = vars[a.value].type;
+
+            if (vars.find(a.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            a.value = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            b.type = vars[b.value].type;
+
+            if (vars.find(b.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            b.value = vars[b.value].value;
+        }
+
+        if (a.type != b.type) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            exit(0);
+        }
+
+        if (a.type == "string") {
+            if (a.value <= b.value) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "int") {
+            if (stoi(a.value) <= stoi(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "bool") {
+            if (a.value == b.value) {
+                vars[var].value = "true";
+            }
+            else {
+                int a1 = 0, a2 = 0;
+                a1 = (a.value == "true");
+                a2 = (b.value == "true");
+                if (a1 > a2) {
+                    vars[var].value = "true";
+                }
+                else {
+                    vars[var].value = "false";
+                }
+            }
+        }
+    }
+    else if (namef == ">") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+
+        if (vars.find(var) == vars.end()) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "NameError: Variable \"" << var << "\" not found." << endl;
+            exit(0);
+        }
+        if (type != "bool") {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            a.type = vars[a.value].type;
+
+            if (vars.find(a.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            a.value = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            b.type = vars[b.value].type;
+
+            if (vars.find(b.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            b.value = vars[b.value].value;
+        }
+
+        if (a.type != b.type) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            exit(0);
+        }
+
+        if (a.type == "string") {
+            if (a.value > b.value) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "int") {
+            if (stoi(a.value) > stoi(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "bool") {
+            int a1 = 0, a2 = 0;
+            a1 = (a.value == "true");
+            a2 = (b.value == "true");
+            if (a1 > a2) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+    }
+    else if (namef == ">=") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+
+        if (vars.find(var) == vars.end()) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "NameError: Variable \"" << var << "\" not found." << endl;
+            exit(0);
+        }
+        if (type != "bool") {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            a.type = vars[a.value].type;
+
+            if (vars.find(a.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            a.value = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            b.type = vars[b.value].type;
+
+            if (vars.find(b.value) == vars.end()) {
+                cout << "Stroke: " << stroke << endl;
+                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
+                exit(0);
+            }
+
+            b.value = vars[b.value].value;
+        }
+
+        if (a.type != b.type) {
+            cout << "Stroke: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            exit(0);
+        }
+
+        if (a.type == "string") {
+            if (a.value >= b.value) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "int") {
+            if (stoi(a.value) >= stoi(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
+        else if (a.type == "bool") {
+            if (a.value == b.value) {
+                vars[var].value = "true";
+            }
+            else {
+                int a1 = 0, a2 = 0;
+                a1 = (a.value == "true");
+                a2 = (b.value == "true");
+                if (a1 >= a2) {
+                    vars[var].value = "true";
+                }
+                else {
+                    vars[var].value = "false";
+                }
+            }
+        }
+    }
     else {
         ll i = 0;
         for (auto e : funcs[namef]) {
@@ -689,7 +1099,7 @@ int main() {
     fin.close();
 
     if (main_stroke == -1) {
-        cout << "SyntaxError: Program must have the function \"main\"" << endl;
+        cout << "SyntaxError: Program must have a \"main\" function." << endl;
         return 0;
     }
     run("main", {}, main_stroke);

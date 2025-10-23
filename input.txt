@@ -5,9 +5,8 @@ endf
 func main
     # a + b
     create bool a
-    set a false
     create string b
-    to_string b a
-
-    print b
+    set b "10"
+    >= a "9" b
+    print a
 endf
