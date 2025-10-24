@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <stack>
 #include <fstream>
+#include <set>
 #define ll long long
 #define endl "\n"
 
@@ -20,33 +21,36 @@ map <string, elem> vars;
 map <string, vector <pair<string, vector <elem>>>> funcs;
 map <string, vector <ll>> strokes;
 map <string, int> args;
+set <string> standard;
+map <string, ll> func_line;
 
 void init_count_args() {
-    args["print"] = 1;
-    args["println"] = 1;
-    args["newl"] = 0;
-    args["input"] = 1;
-    args["create"] = 2;
-    args["set"] = 2;
-    args["delete"] = 1;
-    args["to_int"] = 2;
-    args["to_string"] = 2;
-    args["size"] = 2;
-    args["pass"] = 0;
-    args["plus"] = 3;
-    args["minus"] = 3;
-    args["multiply"] = 3;
-    args["divide"] = 3;
-    args["remainder"] = 3;
-    args["equal"] = 3;
-    args["not"] = 2;
-    args["<"] = 3;
-    args["<="] = 3;
-    args[">"] = 3;
-    args[">="] = 3;
+    args["print"] = 1; standard.insert("print");
+    args["println"] = 1; standard.insert("println");
+    args["newl"] = 0; standard.insert("newl");
+    args["input"] = 1; standard.insert("input");
+    args["create"] = 2; standard.insert("create");
+    args["set"] = 2; standard.insert("set");
+    args["delete"] = 1; standard.insert("delete");
+    args["to_int"] = 2; standard.insert("to_int");
+    args["to_string"] = 2; standard.insert("to_string");
+    args["size"] = 2; standard.insert("size");
+    args["pass"] = 0; standard.insert("pass");
+    args["plus"] = 3; standard.insert("plus");
+    args["minus"] = 3; standard.insert("minus");
+    args["multiply"] = 3; standard.insert("multiply");
+    args["divide"] = 3; standard.insert("divide");
+    args["remainder"] = 3; standard.insert("remainder");
+    args["equal"] = 3; standard.insert("equal");
+    args["not"] = 2; standard.insert("not");
+    args["<"] = 3; standard.insert("<");
+    args["<="] = 3; standard.insert("<=");
+    args[">"] = 3; standard.insert(">");
+    args[">="] = 3; standard.insert(">=");
+    args["if"] = 3; standard.insert("if");
 }
 
-bool check_valid(string var, ll stroke) {
+void check_valid(string var, ll stroke) {
     if (vars.find(var) == vars.end()) {
         cout << "Line: " << stroke << endl;
         cout << "NameError: Variable \"" << var << "\" not found." << endl;
@@ -845,10 +849,64 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
     }
+    else if (namef == "if") {
+        elem var = func_args[0];
+        elem f = func_args[1];
+        elem g = func_args[2];
+
+        check_valid(var.value, stroke);
+        string value = var.value;
+        string type = var.type;
+
+
+        if (vars[value].type != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << value << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (f.type == "variable") {
+            if (funcs.find(f.value) == funcs.end()) {
+                cout << "Line: " << stroke << endl;
+                cout << "NameError: Function \"" << f.value << "\" not found." << endl;
+                exit(0);
+            }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "SyntaxError: \"" << f.value << "\" must be function." << endl;
+            exit(0);
+        }
+
+        if (g.type == "variable") {
+            if (funcs.find(g.value) == funcs.end()) {
+                cout << "Line: " << stroke << endl;
+                cout << "NameError: Function \"" << g.value << "\" not found." << endl;
+                exit(0);
+            }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "SyntaxError: \"" << g.value << "\" must be function." << endl;
+            exit(0);
+        }
+
+        if (vars[value].value == "true") {
+            run(f.value, {}, func_line[f.value]);
+        }
+        else {
+            run(g.value, {}, func_line[g.value]);
+        }
+    }
     else {
-        ll i = 0;
+        ll i = 1;
         for (auto e : funcs[namef]) {
-            run(e.first, e.second, strokes[namef][i]);
+            if (standard.find(e.first) != standard.end()) {
+                run(e.first, e.second, stroke + i);
+            }
+            else {
+                run(e.first, e.second, func_line[e.first]);
+            }
             i++;
         }
     }
@@ -906,7 +964,6 @@ int main() {
     ifstream fin("input.txt");
 
     ios_base::sync_with_stdio(false);
-    fin.tie(nullptr);
     cin.tie(nullptr);
     cout.tie(nullptr);
 
@@ -914,11 +971,10 @@ int main() {
     bool is_func = false;
     string namef;
     ll stroke = 0;
-    ll main_stroke = -1;
     while (true) {
-        string str;
-        fin >> str;
         stroke++;
+        string str = "";
+        fin >> str;
 
         if (fin.eof()) {
             break;
@@ -940,9 +996,7 @@ int main() {
             is_func = true;
             fin >> namef;
             args[namef] = 0;
-            if (namef == "main") {
-                main_stroke = stroke;
-            }
+            func_line[namef] = stroke;
             continue;
         }
 
@@ -970,9 +1024,9 @@ int main() {
         cout << "SyntaxError: Functions must have a \"endf\"." << endl;
         return 0;
     }
-    if (main_stroke == -1) {
+    if (func_line.find("main") == func_line.end()) {
         cout << "SyntaxError: Program must have a \"main\" function." << endl;
         return 0;
     }
-    run("main", {}, main_stroke);
+    run("main", {}, func_line["main"]);
 }
