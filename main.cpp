@@ -48,6 +48,7 @@ void init_count_args() {
     args[">"] = 3; standard.insert(">");
     args[">="] = 3; standard.insert(">=");
     args["if"] = 3; standard.insert("if");
+    args["while"] = 2; standard.insert("while");
 }
 
 void check_valid(string var, ll stroke) {
@@ -898,6 +899,38 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             run(g.value, {}, func_line[g.value]);
         }
     }
+    else if (namef == "while") {
+        elem var = func_args[0];
+        elem f = func_args[1];
+
+        check_valid(var.value, stroke);
+        string value = var.value;
+        string type = var.type;
+
+
+        if (vars[value].type != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << value << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (f.type == "variable") {
+            if (funcs.find(f.value) == funcs.end()) {
+                cout << "Line: " << stroke << endl;
+                cout << "NameError: Function \"" << f.value << "\" not found." << endl;
+                exit(0);
+            }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "SyntaxError: \"" << f.value << "\" must be function." << endl;
+            exit(0);
+        }
+
+        while (vars[value].value == "true") {
+            run(f.value, {}, func_line[f.value]);
+        }
+    }
     else {
         ll i = 1;
         for (auto e : funcs[namef]) {
@@ -976,10 +1009,6 @@ int main() {
         string str = "";
         fin >> str;
 
-        if (fin.eof()) {
-            break;
-        }
-
         if (str == "#") {
             string comment;
             getline(fin, comment);
@@ -1016,6 +1045,10 @@ int main() {
             vector <elem> f_args = string_to_args(args_str, stroke);
             funcs[namef].emplace_back(str, f_args);
             strokes[namef].push_back(stroke);
+        }
+
+        if (fin.eof()) {
+            break;
         }
     }
     fin.close();

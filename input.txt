@@ -1,12 +1,18 @@
-func p
-    plus a a b
+func f
+    create int aa
+    multiply aa i i
+    print aa
+    print " "
+    plus i i 1
+    <= b i n
 endf
-
 func main
     # a + b
-    create bool a
-    create string b
-    set b "10"
-    >= a "9" b
-    print a
+    create int n
+    input n
+    create int i
+    set i 1
+    create bool b
+    <= b i n
+    while b f
 endf
