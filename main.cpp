@@ -21,9 +21,10 @@ map <string, vector <pair<string, vector <elem>>>> funcs;
 map <string, vector <ll>> strokes;
 map <string, int> args;
 
-void init_common_functions() {
+void init_count_args() {
     args["print"] = 1;
     args["println"] = 1;
+    args["newl"] = 0;
     args["input"] = 1;
     args["create"] = 2;
     args["set"] = 2;
@@ -44,6 +45,14 @@ void init_common_functions() {
     args[">="] = 3;
 }
 
+bool check_valid(string var, ll stroke) {
+    if (vars.find(var) == vars.end()) {
+        cout << "Stroke: " << stroke << endl;
+        cout << "NameError: Variable \"" << var << "\" not found." << endl;
+        exit(0);
+    }
+}
+
 void run(string namef, vector <elem> func_args, ll stroke) {
     if (args[namef] != func_args.size()) {
         cout << "Stroke: " << stroke << endl;
@@ -54,11 +63,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     if (namef == "print") {
         string out = func_args[0].value;
         if (func_args[0].type == "variable") {
-            if (vars.find(out) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << out << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(out, stroke);
             out = vars[out].value;
         }
         cout << out;
@@ -66,22 +71,18 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     else if (namef == "println") {
         string out = func_args[0].value;
         if (func_args[0].type == "variable") {
-            if (vars.find(out) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << out << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(out, stroke);
             out = vars[out].value;
         }
         cout << out << endl;
     }
+    else if (namef == "newl") {
+        cout << endl;
+    }
     else if (namef == "input") {
         string var = func_args[0].value;
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
+
         string s;
         cin >> s;
         if (vars[var].type == "int") {
@@ -115,17 +116,9 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     else if (namef == "set") {
         elem var = func_args[0];
         elem val = func_args[1];
-        if (vars.find(var.value) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var.value << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var.value, stroke);
         if (val.type == "variable") {
-            if (vars.find(val.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << val.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(val.value, stroke);
             val = vars[val.value];
         }
         if (val.type != vars[var.value].type) {
@@ -137,20 +130,12 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "delete") {
         string var = func_args[0].value;
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         vars.erase(var);
     }
     else if (namef == "to_int") {
         elem var = func_args[0];
-        if (vars.find(var.value) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var.value << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var.value, stroke);
         if (vars[var.value].type != "int") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be int." << endl;
@@ -160,11 +145,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem num = func_args[1];
         elem n;
         if (num.type == "variable") {
-            if (vars.find(num.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << num.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(num.value, stroke);
             n = vars[num.value];
         }
         else {
@@ -183,7 +164,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             for (auto i : n.value) {
                 if (!(i >= '0' and i <= '9')) {
                     cout << "Stroke: " << stroke << endl;
-                    cout << "SyntaxError: Cannot convert \"" << n.value << "\" to int." << endl;
+                    cout << "TypeError: Cannot convert \"" << n.value << "\" to int." << endl;
                     exit(0);
                 }
             }
@@ -193,11 +174,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "to_string") {
         elem var = func_args[0];
-        if (vars.find(var.value) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var.value << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var.value, stroke);
         if (vars[var.value].type != "string") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be string." << endl;
@@ -206,11 +183,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         elem num = func_args[1], n;
         if (num.type == "variable") {
-            if (vars.find(num.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << num.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(num.value, stroke);
             n = vars[num.value];
         }
         else {
@@ -228,20 +201,12 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
             if (a.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
@@ -261,11 +226,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
             if (b.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
@@ -295,11 +256,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "int") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
@@ -309,11 +266,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
             if (a.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
@@ -333,11 +286,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
             if (b.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
@@ -364,11 +313,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "int") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
@@ -378,11 +323,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
             if (a.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
@@ -402,11 +343,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
             if (b.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
@@ -433,11 +370,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "int") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
@@ -447,11 +380,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
             if (a.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
@@ -471,11 +400,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
             if (b.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
@@ -508,11 +433,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "int") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
@@ -522,11 +443,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
             if (a.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
@@ -546,11 +463,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
             if (b.type != type) {
                 cout << "Stroke: " << stroke << endl;
                 cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
@@ -583,11 +496,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "bool") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
@@ -597,22 +506,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
@@ -635,11 +536,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         string type = vars[var].type;
         elem a = func_args[1];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "bool") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
@@ -649,11 +546,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
@@ -677,11 +570,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "bool") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
@@ -691,22 +580,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
@@ -751,11 +632,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "bool") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
@@ -765,22 +642,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
@@ -830,11 +699,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "bool") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
@@ -844,22 +709,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
@@ -904,11 +761,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        if (vars.find(var) == vars.end()) {
-            cout << "Stroke: " << stroke << endl;
-            cout << "NameError: Variable \"" << var << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid(var, stroke);
         if (type != "bool") {
             cout << "Stroke: " << stroke << endl;
             cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
@@ -918,22 +771,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            if (vars.find(a.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << a.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            if (vars.find(b.value) == vars.end()) {
-                cout << "Stroke: " << stroke << endl;
-                cout << "NameError: Variable \"" << b.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
@@ -1042,7 +887,7 @@ int main() {
     cin.tie(nullptr);
     cout.tie(nullptr);
 
-    init_common_functions();
+    init_count_args();
     bool is_func = false;
     string namef;
     ll stroke = 0;
@@ -1098,6 +943,10 @@ int main() {
     }
     fin.close();
 
+    if (is_func) {
+        cout << "SyntaxError: Functions must have a \"endf\"." << endl;
+        return 0;
+    }
     if (main_stroke == -1) {
         cout << "SyntaxError: Program must have a \"main\" function." << endl;
         return 0;
