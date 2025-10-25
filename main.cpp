@@ -47,6 +47,8 @@ void init_count_args() {
     args["<="] = 3; standard.insert("<=");
     args[">"] = 3; standard.insert(">");
     args[">="] = 3; standard.insert(">=");
+    args["and"] = 3; standard.insert("and");
+    args["or"] = 3; standard.insert("or");
     args["if"] = 3; standard.insert("if");
     args["while"] = 2; standard.insert("while");
 }
@@ -848,6 +850,156 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                     vars[var].value = "false";
                 }
             }
+        }
+    }
+    else if (namef == "and") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+        string atype;
+        string avalue;
+        string btype;
+        string bvalue;
+
+        check_valid(var, stroke);
+        if (type != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            atype = vars[a.value].type;
+
+            check_valid(a.value, stroke);
+
+            avalue = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            btype = vars[b.value].type;
+
+            check_valid(b.value, stroke);
+
+            bvalue = vars[b.value].value;
+        }
+
+        if (atype != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            exit(0);
+        }
+        if (btype != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: \"" << b.value << "\" must be bool." << type << "." << endl;
+            exit(0);
+        }
+
+        if (bvalue == "true" and avalue == "true") {
+            vars[var].value = "true";
+        }
+        else {
+            vars[var].value = "false";
+        }
+    }
+    else if (namef == "or") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+        string atype;
+        string avalue;
+        string btype;
+        string bvalue;
+
+        check_valid(var, stroke);
+        if (type != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            atype = vars[a.value].type;
+
+            check_valid(a.value, stroke);
+
+            avalue = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            btype = vars[b.value].type;
+
+            check_valid(b.value, stroke);
+
+            bvalue = vars[b.value].value;
+        }
+
+        if (atype != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            exit(0);
+        }
+        if (btype != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: \"" << b.value << "\" must be bool." << type << "." << endl;
+            exit(0);
+        }
+
+        if (bvalue == "false" and avalue == "false") {
+            vars[var].value = "false";
+        }
+        else {
+            vars[var].value = "true";
+        }
+    }
+    else if (namef == "xor") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+        elem b = func_args[2];
+        string atype;
+        string avalue;
+        string btype;
+        string bvalue;
+
+        check_valid(var, stroke);
+        if (type != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        if (a.type == "variable") {
+            atype = vars[a.value].type;
+
+            check_valid(a.value, stroke);
+
+            avalue = vars[a.value].value;
+        }
+        if (b.type == "variable") {
+            btype = vars[b.value].type;
+
+            check_valid(b.value, stroke);
+
+            bvalue = vars[b.value].value;
+        }
+
+        if (atype != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            exit(0);
+        }
+        if (btype != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: \"" << b.value << "\" must be bool." << type << "." << endl;
+            exit(0);
+        }
+
+        if (bvalue == avalue) {
+            vars[var].value = "false";
+        }
+        else {
+            vars[var].value = "true";
         }
     }
     else if (namef == "if") {
