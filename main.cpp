@@ -69,20 +69,36 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
 
     if (namef == "print") {
-        string out = func_args[0].value;
-        if (func_args[0].type == "variable") {
-            check_valid(out, stroke);
-            out = vars[out].value;
+        elem out = func_args[0];
+        if (out.type == "variable") {
+            check_valid(out.value, stroke);
+            out = vars[out.value];
         }
-        cout << out;
+        if (out.type == "float") {
+            for (auto& i : out.value) {
+                if (i == ',') {
+                    i = '.';
+                }
+            }
+        }
+
+        cout << out.value;
     }
     else if (namef == "println") {
-        string out = func_args[0].value;
-        if (func_args[0].type == "variable") {
-            check_valid(out, stroke);
-            out = vars[out].value;
+        elem out = func_args[0];
+        if (out.type == "variable") {
+            check_valid(out.value, stroke);
+            out = vars[out.value];
         }
-        cout << out << endl;
+        if (out.type == "float") {
+            for (auto& i : out.value) {
+                if (i == ',') {
+                    i = '.';
+                }
+            }
+        }
+
+        cout << out.value << endl;
     }
     else if (namef == "newl") {
         cout << endl;
@@ -102,6 +118,27 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 }
             }
         }
+        if (vars[var].type == "float") {
+            int cnt = 0;
+            for (auto& i : s) {
+                if (!(i >= '0' && i <= '9')) {
+                    if (i != '.') {
+                        cout << "Line: " << stroke << endl;
+                        cout << "TypeError: \"" << s << "\" is not float." << endl;
+                        exit(0);
+                    }
+                    else {
+                        i = ',';
+                        cnt++;
+                    }
+                }
+            }
+            if (cnt != 1) {
+                cout << "Line: " << stroke << endl;
+                cout << "TypeError: \"" << s << "\" is not float." << endl;
+                exit(0);
+            }
+        }
         if (vars[var].type == "bool") {
             if (s != "true" and s != "false") {
                 cout << "Line: " << stroke << endl;
@@ -114,7 +151,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     else if (namef == "create") {
         string type = func_args[0].value;
         string name = func_args[1].value;
-        if (type != "int" and type != "string" and type != "bool") {
+        if (type != "int" and type != "string" and type != "bool" and type != "float") {
             cout << "Line: " << stroke << endl;
             cout << "TypeError: Type of data \"" << type << "\" does not exist." << endl;
             exit(0);
@@ -166,6 +203,16 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
             else if (n.value == "false") {
                 vars[var.value].value = "0";
+            }
+        }
+        else if (n.type == "float") {
+            string s = "";
+            for (auto i : n.value) {
+                if (i == '.') {
+                    vars[var.value].value = s;
+                    break;
+                }
+                s += i;
             }
         }
         else {
@@ -220,6 +267,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         
         if (n.type == "string" or n.type == "int") {
             vars[var.value].value = to_string((n.value).size());
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == "pass") {
@@ -279,6 +331,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         else if (type == "int") {
             vars[var].value = to_string(stoll(a.value) + stoll(b.value));
         }
+        else if (type == "float") {
+            vars[var].value = to_string(stod(a.value) + stod(b.value));
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
+        }
     }
     else if (namef == "minus") {
         string var = func_args[0].value;
@@ -287,11 +347,6 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem b = func_args[2];
 
         check_valid(var, stroke);
-        if (type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
-            exit(0);
-        }
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
@@ -336,6 +391,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (type == "int") {
             vars[var].value = to_string(stoll(a.value) - stoll(b.value));
         }
+        else if (type == "float") {
+            vars[var].value = to_string(stod(a.value) - stod(b.value));
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
+        }
     }
     else if (namef == "multiply") {
         string var = func_args[0].value;
@@ -344,11 +407,6 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem b = func_args[2];
 
         check_valid(var, stroke);
-        if (type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
-            exit(0);
-        }
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
@@ -393,6 +451,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         if (type == "int") {
             vars[var].value = to_string(stoll(a.value) * stoll(b.value));
         }
+        else if (type == "float") {
+            vars[var].value = to_string(stod(a.value) * stod(b.value));
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
+        }
     }
     else if (namef == "divide") {
         string var = func_args[0].value;
@@ -401,11 +467,6 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem b = func_args[2];
 
         check_valid(var, stroke);
-        if (type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
-            exit(0);
-        }
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
@@ -455,6 +516,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (type == "int") {
             vars[var].value = to_string(stoll(a.value) / stoll(b.value));
+        }
+        else if (type == "float") {
+            vars[var].value = to_string(stod(a.value) / stod(b.value));
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == "remainder") {
@@ -518,6 +587,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (type == "int") {
             vars[var].value = to_string(stoll(a.value) % stoll(b.value));
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == "equal") {
@@ -644,6 +718,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 vars[var].value = "false";
             }
         }
+        else if (a.type == "float") {
+            if (stod(a.value) < stod(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
         else if (a.type == "bool") {
             int a1 = 0, a2 = 0;
             a1 = (a.value == "true");
@@ -654,6 +736,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             else {
                 vars[var].value = "false";
             }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == "<=") {
@@ -706,6 +793,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 vars[var].value = "false";
             }
         }
+        else if (a.type == "float") {
+            if (stod(a.value) <= stod(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
         else if (a.type == "bool") {
             if (a.value == b.value) {
                 vars[var].value = "true";
@@ -721,6 +816,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                     vars[var].value = "false";
                 }
             }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == ">") {
@@ -773,6 +873,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 vars[var].value = "false";
             }
         }
+        else if (a.type == "float") {
+            if (stod(a.value) > stod(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
         else if (a.type == "bool") {
             int a1 = 0, a2 = 0;
             a1 = (a.value == "true");
@@ -783,6 +891,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             else {
                 vars[var].value = "false";
             }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == ">=") {
@@ -835,6 +948,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 vars[var].value = "false";
             }
         }
+        else if (a.type == "float") {
+            if (stod(a.value) > stod(b.value)) {
+                vars[var].value = "true";
+            }
+            else {
+                vars[var].value = "false";
+            }
+        }
         else if (a.type == "bool") {
             if (a.value == b.value) {
                 vars[var].value = "true";
@@ -850,6 +971,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                     vars[var].value = "false";
                 }
             }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == "and") {
@@ -1107,6 +1233,32 @@ vector <elem> string_to_args(string str, ll stroke) {
         if (str[i] == ' ' and !is_string) {
             if (type == "variable" and (value == "true" or value == "false")) {
                 ans.push_back({ "bool", value });
+            }
+            else if (type == "int") {
+                int cnt = 0;
+                for (auto& k : value) {
+                    if (!((k >= '0' and k <= '9') or k == '.')) {
+                        cout << "Line: " << stroke << endl;
+                        cout << "TypeError: Incorrect argument format." << endl;
+                        exit(0);
+                    }
+                    if (k == '.') {
+                        cnt++;
+                        k = ',';
+                    }
+                }
+                if (cnt == 0) {
+                    ans.push_back({ "int", value });
+                }
+                else if (cnt == 1) {
+                    ans.push_back({ "float", value });
+                }
+                else {
+                    cout << "Line: " << stroke << endl;
+                    cout << "TypeError: Incorrect argument format." << endl;
+                    exit(0);
+                }
+
             }
             else {
                 ans.push_back({ type, value });
