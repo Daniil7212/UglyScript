@@ -34,6 +34,8 @@ void init_count_args() {
     args["delete"] = 1; standard.insert("delete");
     args["to_int"] = 2; standard.insert("to_int");
     args["to_string"] = 2; standard.insert("to_string");
+    args["to_bool"] = 2; standard.insert("to_bool");
+    args["to_float"] = 2; standard.insert("to_float");
     args["size"] = 2; standard.insert("size");
     args["pass"] = 0; standard.insert("pass");
     args["plus"] = 3; standard.insert("plus");
@@ -215,7 +217,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 s += i;
             }
         }
-        else {
+        else if (n.type == "string") {
             for (auto i : n.value) {
                 if (!(i >= '0' and i <= '9')) {
                     cout << "Line: " << stroke << endl;
@@ -225,6 +227,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
 
             vars[var.value] = n;
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
+            exit(0);
         }
     }
     else if (namef == "to_string") {
@@ -246,6 +253,97 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
 
         vars[var.value] = n;
+    }
+    else if (namef == "to_bool") {
+        elem var = func_args[0];
+        check_valid(var.value, stroke);
+        if (vars[var.value].type != "bool") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be bool." << endl;
+            exit(0);
+        }
+
+        elem num = func_args[1];
+        elem n;
+        if (num.type == "variable") {
+            check_valid(num.value, stroke);
+            n = vars[num.value];
+        }
+        else {
+            n = num;
+        }
+
+        if (n.type == "int") {
+            if (n.value == "0") {
+                vars[var.value].value = "false";
+            }
+            else {
+                vars[var.value].value = "true";
+            }
+        }
+        else if (n.type == "string") {
+            if (n.value == "true" or n.value == "false") {
+                vars[var.value].value = n.value;
+            }
+            else {
+                cout << "Line: " << stroke << endl;
+                cout << "TypeError: Cannot convert \"" << n.value << "\" to bool." << endl;
+                exit(0);
+            }
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
+            exit(0);
+        }
+    }
+    else if (namef == "to_float") {
+        elem var = func_args[0];
+        check_valid(var.value, stroke);
+        if (vars[var.value].type != "float") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be float." << endl;
+            exit(0);
+        }
+
+        elem num = func_args[1];
+        elem n;
+        if (num.type == "variable") {
+            check_valid(num.value, stroke);
+            n = vars[num.value];
+        }
+        else {
+            n = num;
+        }
+
+        if (n.type == "int") {
+            vars[var.value].value = n.value + ".0";
+        }
+        else if (n.type == "string") {
+            int cnt = 0;
+            for (auto i : n.value) {
+                if (i == '.') {
+                    cnt++;
+                }
+                else if (!(i >= '0' and i <= '9')) {
+                    cout << "Line: " << stroke << endl;
+                    cout << "TypeError: Cannot convert \"" << n.value << "\" to float." << endl;
+                    exit(0);
+                }
+            }
+            if (cnt != 1) {
+                cout << "Line: " << stroke << endl;
+                cout << "TypeError: Cannot convert \"" << n.value << "\" to float." << endl;
+                exit(0);
+            }
+
+            vars[var.value].value = n.value;
+        }
+        else {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
+            exit(0);
+        }
     }
     else if (namef == "size") {
         elem var = func_args[0];
@@ -1012,12 +1110,12 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (atype != "bool") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
             exit(0);
         }
         if (btype != "bool") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << b.value << "\" must be bool." << type << "." << endl;
+            cout << "TypeError: \"" << b.value << "\" must be bool." << endl;
             exit(0);
         }
 
@@ -1062,12 +1160,12 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (atype != "bool") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
             exit(0);
         }
         if (btype != "bool") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << b.value << "\" must be bool." << type << "." << endl;
+            cout << "TypeError: \"" << b.value << "\" must be bool." << endl;
             exit(0);
         }
 
@@ -1112,12 +1210,12 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (atype != "bool") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
             exit(0);
         }
         if (btype != "bool") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << b.value << "\" must be bool." << type << "." << endl;
+            cout << "TypeError: \"" << b.value << "\" must be bool." << endl;
             exit(0);
         }
 
@@ -1229,7 +1327,6 @@ vector <elem> string_to_args(string str, ll stroke) {
     string type = "", value = "";
     bool is_string = false;
     for (int i = 0; i < str.size(); i++) {
-        if (i == 0) continue;
         if (str[i] == ' ' and !is_string) {
             if (type == "variable" and (value == "true" or value == "false")) {
                 ans.push_back({ "bool", value });
@@ -1300,26 +1397,40 @@ int main() {
     setlocale(LC_ALL, "");
     ifstream fin("input.txt");
 
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr);
-    cout.tie(nullptr);
-
     init_count_args();
     bool is_func = false;
     string namef;
     ll stroke = 0;
     while (true) {
         stroke++;
-        string str = "";
-        fin >> str;
+        string s;
+        getline(fin, s);
 
-        if (str == "#") {
-            string comment;
-            getline(fin, comment);
+        if (s == "") continue;
+        for (int i = 0; i < s.size(); i++) {
+            if (s[i] != ' ') {
+                s = s.substr(i, s.size());
+                break;
+            }
+        }
+
+        vector <string> str;
+        string el = "";
+        for (auto i : (s + " ")) {
+            if (i == ' ' and el != "") {
+                str.push_back(el);
+                el = "";
+            }
+            else {
+                el += i;
+            }
+        }
+
+        if (str[0] == "#") {
             continue;
         }
 
-        if (str == "func") {
+        if (str[0] == "func") {
             if (is_func == true) {
                 cout << "Line: " << stroke << endl;
                 cout << "SyntaxError: You can't make a function inside a function.";
@@ -1327,27 +1438,36 @@ int main() {
             }
 
             is_func = true;
-            fin >> namef;
+            namef = str[1];
             args[namef] = 0;
             func_line[namef] = stroke;
             continue;
         }
 
-        if (str == "endf") {
+        if (str[0] == "endf") {
             is_func = false;
-            continue;
         }
 
         if (is_func) {
-            if (args.find(str) == args.end()) {
+            if (args.find(str[0]) == args.end()) {
                 cout << "Line: " << stroke << endl;
-                cout << "NameError: Function \"" << str << "\" not found.";
+                cout << "NameError: Function \"" << str[0] << "\" not found.";
                 return 0;
             }
             string args_str;
-            getline(fin, args_str);
+            for (int i = 0; i < str.size(); i++) {
+                if (i != 0) {
+                    if (i == str.size() - 1) {
+                        args_str += str[i];
+                    }
+                    else {
+                        args_str += str[i] + " ";
+                    }
+                }
+            }
+
             vector <elem> f_args = string_to_args(args_str, stroke);
-            funcs[namef].emplace_back(str, f_args);
+            funcs[namef].emplace_back(str[0], f_args);
             strokes[namef].push_back(stroke);
         }
 
@@ -1356,7 +1476,6 @@ int main() {
         }
     }
     fin.close();
-
     if (is_func) {
         cout << "SyntaxError: Functions must have a \"endf\"." << endl;
         return 0;

@@ -9,9 +9,12 @@ endf
 func main
     # a + b
     create float a
+    print 1
     input a
-    create float b
-    set b 1.3
-    plus a a b
+    create int b
+    set b 1
+    create float c
+    to_float c b
+    plus a a c
     print a
 endf
