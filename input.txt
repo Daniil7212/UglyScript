@@ -1,66 +1,28 @@
 func f
     input p
-    set pri i
-    minus pri pri 1
-    get pr v pri
-    plus p p pr
     push v p
 
     plus i i 1
     <= b i n
 endf
 func g
-    set j 0
-    <= bb j n
-    while bb h
-
-    plus i i 1
-    <= b i n
-endf
-func ps
-    pass
-endf
-func h
-    get l v i
-    get r v j
-    minus r r l
-
-    equal eq r s
-    if eq po ps
-
-    plus j j 1
-    <= bb j n
-endf
-func po
-    print "Yes"
-    exit
+    multiply pr pr pr
+    println pr
 endf
 func main
     vector int v
-    push v 0
+    push v -100
     create int p
     create int pr
-    create int pri
-    create int l
-    create int r
-    create bool eq
 
-    create int s
     create int n
     input n
-    input s
 
     create int i
-    create int j
     set i 1
     create bool b
-    create bool bb
     <= b i n
     while b f
 
-    set i 0
-    <= b i n
-    while b g
-
-    print "No"
+    for pr v g
 endf
