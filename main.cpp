@@ -34,6 +34,7 @@ map <string, vec> vecs; // название переменной -> вектор
 void init_standard_funcs() {
     args["print"] = 1; standard.insert("print");
     args["println"] = 1; standard.insert("println");
+    args["printf"] = 2; standard.insert("printf");
     args["newl"] = 0; standard.insert("newl");
     args["input"] = 1; standard.insert("input");
     args["inputln"] = 1; standard.insert("inputln");
@@ -65,6 +66,7 @@ void init_standard_funcs() {
     args["or"] = 3; standard.insert("or");
     args["if"] = 3; standard.insert("if");
     args["while"] = 2; standard.insert("while");
+    args["for"] = 4; standard.insert("for");
     args["foreach"] = 3; standard.insert("foreach");
     args["push"] = 2; standard.insert("push");
     args["pop"] = 1; standard.insert("pop");
@@ -73,6 +75,7 @@ void init_standard_funcs() {
     args["change"] = 3; standard.insert("change");
     args["erase"] = 2; standard.insert("erase");
     args["reverse"] = 1; standard.insert("reverse");
+    args["clear"] = 1; standard.insert("clear");
     args["sort"] = 1; standard.insert("sort");
     args["swap"] = 2; standard.insert("swap");
     args["find"] = 3; standard.insert("find");
@@ -241,6 +244,42 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
 
         cout << out.value << endl;
+    }
+    else if (namef == "printf") {
+        elem out = func_args[0];
+        elem n = func_args[1];
+        if (out.type == "variable") {
+            check_valid_var(out.value, stroke);
+            out = vars[out.value];
+        }
+
+        if (n.type == "variable") {
+            check_valid_var(n.value, stroke);
+            check_type_var(n.value, "int", stroke);
+            n = vars[out.value];
+        }
+        else
+        {
+            check_type(n, "int", stroke);
+        }
+
+        if (out.type == "float") {
+            string s = out.value;
+            string ans = "";
+            int k = -1;
+            for (int i = 0; (i < s.size()) and (k <= stoll(n.value)); i++) {
+                if (s[i] == ',') {
+                    s[i] = '.';
+                }
+                if (s[i] == '.') k = 0;
+                ans += s[i];
+                if (k != -1) k++;
+            }
+            cout << ans;
+        }
+        else {
+            error_func_wrong_type(namef, out.type, stroke);
+        }
     }
     else if (namef == "newl") {
         cout << endl;
@@ -1209,24 +1248,32 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         check_type_var(value, "bool", stroke);
 
         if (f.type == "variable") {
-            check_valid_func(f.value, stroke);
+            if (f.value != "pass") {
+                check_valid_func(f.value, stroke);
+            }
         }
         else {
             error_must_be_func(f.value, stroke);
         }
 
         if (g.type == "variable") {
-            check_valid_func(g.value, stroke);
+            if (g.value != "pass") {
+                check_valid_func(g.value, stroke);
+            }
         }
         else {
             error_must_be_func(g.value, stroke);
         }
 
         if (vars[value].value == "true") {
-            run(f.value, {}, func_line[f.value]);
+            if (f.value != "pass") {
+                run(f.value, {}, func_line[f.value]);
+            }
         }
         else {
-            run(g.value, {}, func_line[g.value]);
+            if (g.value != "pass") {
+                run(g.value, {}, func_line[g.value]);
+            }
         }
     }
     else if (namef == "while") {
@@ -1246,6 +1293,52 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
 
         while (vars[value].value == "true") {
+            run(f.value, {}, func_line[f.value]);
+        }
+    }
+    else if (namef == "for") {
+        elem var = func_args[0];
+        elem l = func_args[1];
+        elem r = func_args[2];
+        elem f = func_args[3];
+
+        check_valid_var(var.value, stroke);
+        string value = var.value;
+        string type = var.type;
+
+        check_valid_var(var.value, stroke);
+
+        if (l.type == "variable") {
+            check_valid_var(l.value, stroke);
+            check_type_var(l.value, "int", stroke);
+
+            l = vars[l.value];
+        }
+        else {
+            check_type(l, "int", stroke);
+        }
+
+        if (r.type == "variable") {
+            check_valid_var(r.value, stroke);
+            check_type_var(r.value, "int", stroke);
+
+            r = vars[r.value];
+        }
+        else {
+            check_type(r, "int", stroke);
+        }
+
+        if (f.type == "variable") {
+            check_valid_func(f.value, stroke);
+        }
+        else {
+            error_must_be_func(f.value, stroke);
+        }
+
+        check_type_var(value, "int", stroke);
+
+        for (ll i = stoll(l.value); i <= stoll(r.value); i++) {
+            vars[value].value = to_string(i);
             run(f.value, {}, func_line[f.value]);
         }
     }
@@ -1452,6 +1545,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vecs[value].value = v;
         }
     }
+    else if (namef == "clear") {
+        elem var = func_args[0];
+
+        check_valid_var(var.value, stroke);
+        string value = var.value;
+
+        if (vars[value].type == "string") {
+            string s = vars[value].value;
+            s.clear();
+            vars[value].value = s;
+        }
+        else {
+            check_valid_vec(value, stroke);
+
+            vector <string> v = vecs[value].value;
+            v.clear();
+            vecs[value].value = v;
+        }
+    }
     else if (namef == "sort") {
         elem var = func_args[0];
 
@@ -1602,8 +1714,12 @@ vector <elem> string_to_args(string str, ll stroke) {
                                 error_arg_type(value, stroke);
                             }
                             if (value[k] == '.') {
-                                error_arg_type(value, stroke);
-                                pnt = 1;
+                                if (k != 0) {
+                                    pnt = 1;
+                                }
+                                else {
+                                    error_arg_type(value, stroke);
+                                }
                             }
                         }
                         if (pnt == 1) {

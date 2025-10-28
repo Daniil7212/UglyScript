@@ -23,10 +23,13 @@ func main
     <= b i n
     while b f
     sort v
-    for pr v g
+    foreach pr v g
 
     newl
     create int ind
     find ind v 3
     println ind
+
+    newl
+    printf 1.3333 1
 endf
