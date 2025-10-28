@@ -6,7 +6,6 @@ func f
     <= b i n
 endf
 func g
-    multiply pr pr pr
     println pr
 endf
 func main
@@ -23,6 +22,11 @@ func main
     create bool b
     <= b i n
     while b f
-
+    sort v
     for pr v g
+
+    newl
+    create int ind
+    find ind v 3
+    println ind
 endf

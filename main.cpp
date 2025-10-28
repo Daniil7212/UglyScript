@@ -7,6 +7,7 @@
 #include <stack>
 #include <fstream>
 #include <set>
+#include <algorithm>
 #define ll long long
 #define endl "\n"
 
@@ -71,6 +72,10 @@ void init_standard_funcs() {
     args["insert"] = 3; standard.insert("insert");
     args["change"] = 3; standard.insert("change");
     args["erase"] = 2; standard.insert("erase");
+    args["reverse"] = 1; standard.insert("reverse");
+    args["sort"] = 1; standard.insert("sort");
+    args["swap"] = 2; standard.insert("swap");
+    args["find"] = 3; standard.insert("find");
 }
 
 // проверка существует ли такая переменная
@@ -80,6 +85,22 @@ void check_valid(string var, ll stroke) {
         cout << "NameError: Variable \"" << var << "\" not found." << endl;
         exit(0);
     }
+}
+
+// проверка индекса
+void check_index(ll index, ll size, ll stroke) {
+    if (index >= size or index < 0) {
+        cout << "Line: " << stroke << endl;
+        cout << "IndexError: Index \"" << to_string(index) << "\" out of range." << endl;
+        exit(0);
+    }
+}
+
+// проверка индекса
+void error_func_wrong_type(string namef, string type, ll stroke) {
+    cout << "Line: " << stroke << endl;
+    cout << "SyntaxError: Function \"" << namef << "\" does not support \"" << type <<"\"." << endl;
+    exit(0);
 }
 
 // Запуск функций
@@ -105,9 +126,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         if (out.type == "vector") {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Function \"" << namef << "\" does not support \"" << out.type <<"\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, out.type, stroke);
         }
 
         cout << out.value;
@@ -127,9 +146,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         if (out.type == "vector") {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Function \"" << namef << "\" does not support \"" << out.type <<"\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, out.type, stroke);
         }
 
         cout << out.value << endl;
@@ -191,9 +208,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Function \"" << namef << "\" does not support \"" << vars[var].type <<"\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, vars[var].type, stroke);
         }
         vars[var].value = s;
     }
@@ -208,9 +223,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = s;
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Function \"" << namef << "\" does not support \"" << vars[var].type <<"\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, vars[var].type, stroke);
         }
     }
     else if (namef == "create") {
@@ -324,9 +337,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var.value] = n;
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, n.type, stroke);
         }
     }
     else if (namef == "to_string") {
@@ -348,9 +359,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
 
         if (n.type == "vector") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, n.type, stroke);
         }
 
         vars[var.value] = n;
@@ -393,9 +402,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, n.type, stroke);
         }
     }
     else if (namef == "to_float") {
@@ -442,9 +449,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var.value].value = n.value;
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, n.type, stroke);
         }
     }
     else if (namef == "size") {
@@ -472,9 +477,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var.value].value = to_string((vecs[n.value].value).size());
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << n.type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, n.type, stroke);
         }
     }
     else if (namef == "fast_input") {
@@ -546,9 +549,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = to_string(stod(a.value) + stod(b.value));
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "minus") {
@@ -606,9 +607,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = to_string(stod(a.value) - stod(b.value));
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "multiply") {
@@ -666,9 +665,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = to_string(stod(a.value) * stod(b.value));
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "divide") {
@@ -732,9 +729,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = to_string(stod(a.value) / stod(b.value));
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "remainder") {
@@ -795,9 +790,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = to_string(stoll(a.value) % stoll(b.value));
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "abs") {
@@ -840,9 +833,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = to_string(abs(stod(a.value)));
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "equal") {
@@ -875,7 +866,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (a.type != b.type) {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
             exit(0);
         }
 
@@ -916,7 +907,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (a.type != "bool") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
             exit(0);
         }
 
@@ -957,7 +948,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (a.type != b.type) {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
             exit(0);
         }
 
@@ -997,9 +988,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "<=") {
@@ -1032,7 +1021,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (a.type != b.type) {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
             exit(0);
         }
 
@@ -1077,9 +1066,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == ">") {
@@ -1112,7 +1099,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (a.type != b.type) {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
             exit(0);
         }
 
@@ -1152,9 +1139,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == ">=") {
@@ -1187,7 +1172,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (a.type != b.type) {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << type << "." << endl;
+            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
             exit(0);
         }
 
@@ -1232,9 +1217,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Function \"" << namef << "\" does not support \"" << type << "\"." << endl;
-            exit(0);
+            error_func_wrong_type(namef, type, stroke);
         }
     }
     else if (namef == "and") {
@@ -1578,11 +1561,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
 
         if (vec.type == "string") {
-            if (stoll(index.value) >= vec.value.size() or stoll(index.value) < 0) {
-                cout << "Line: " << stroke << endl;
-                cout << "IndexError: Index \"" << index.value << "\" out of range." << endl;
-                exit(0);
-            }
+            check_index(stoll(index.value), vec.value.size(), stroke);
 
             vars[var.value].value = vec.value[stoll(index.value)];
         }
@@ -1593,11 +1572,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 exit(0);
             }
 
-            if (stoll(index.value) >= vecs[vec.value].value.size() or stoll(index.value) < 0) {
-                cout << "Line: " << stroke << endl;
-                cout << "IndexError: Index \"" << index.value << "\" out of range." << endl;
-                exit(0);
-            }
+            check_index(stoll(index.value), vecs[vec.value].value.size(), stroke);
 
             vars[var.value].value = (vecs[vec.value].value)[stoll(index.value)];
         }
@@ -1633,11 +1608,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 exit(0);
             }
 
-            if (stoll(ind.value) >= vars[value].value.size() or stoll(ind.value) < 0) {
-                cout << "Line: " << stroke << endl;
-                cout << "IndexError: Index \"" << ind.value << "\" out of range." << endl;
-                exit(0);
-            }
+            check_index(stoll(ind.value), vars[value].value.size(), stroke);
 
             (vars[value].value).insert(stoll(ind.value), e.value);
         }
@@ -1654,11 +1625,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 exit(0);
             }
 
-            if (stoll(ind.value) >= vecs[value].value.size() or stoll(ind.value) < 0) {
-                cout << "Line: " << stroke << endl;
-                cout << "IndexError: Index \"" << ind.value << "\" out of range." << endl;
-                exit(0);
-            }
+            check_index(stoll(ind.value), vecs[value].value.size(), stroke);
 
             (vecs[value].value).insert(vecs[value].value.begin() + stoll(ind.value), e.value);
         }
@@ -1698,12 +1665,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             cout << "TypeError: \"" << e.value << "\" is " << e.type << " but must be "<< vecs[value].type << "." << endl;
             exit(0);
         }
-
-        if (stoll(ind.value) >= vecs[value].value.size() or stoll(ind.value) < 0) {
-            cout << "Line: " << stroke << endl;
-            cout << "IndexError: Index \"" << ind.value << "\" out of range." << endl;
-            exit(0);
-        }
+        check_index(stoll(ind.value), vecs[value].value.size(), stroke);
 
         vecs[value].value[stoll(ind.value)] = e.value;
     }
@@ -1726,11 +1688,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
 
         if (vars[value].type == "string") {
-            if (stoll(ind.value) >= vars[value].value.size() or stoll(ind.value) < 0) {
-                cout << "Line: " << stroke << endl;
-                cout << "IndexError: Index \"" << ind.value << "\" out of range." << endl;
-                exit(0);
-            }
+            check_index(stoll(ind.value), vars[value].value.size(), stroke);
 
             (vars[value].value).erase(vars[value].value.begin() + stoll(ind.value));
         }
@@ -1740,14 +1698,164 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 cout << "NameError: Vector \"" << value << "\" not found." << endl;
                 exit(0);
             }
+            check_index(stoll(ind.value), vecs[value].value.size(), stroke);
 
-            if (stoll(ind.value) >= vecs[value].value.size() or stoll(ind.value) < 0) {
+            (vecs[value].value).erase(vecs[value].value.begin() + stoll(ind.value));
+        }
+    }
+    else if (namef == "reverse") {
+        elem var = func_args[0];
+
+        check_valid(var.value, stroke);
+        string value = var.value;
+
+        if (vars[value].type == "string") {
+            string s = vars[value].value;
+            reverse(s.begin(), s.end());
+            vars[value].value = s;
+        }
+        else {
+            if (vecs.find(value) == vecs.end()) {
                 cout << "Line: " << stroke << endl;
-                cout << "IndexError: Index \"" << ind.value << "\" out of range." << endl;
+                cout << "NameError: Vector \"" << value << "\" not found." << endl;
                 exit(0);
             }
 
-            (vecs[value].value).erase(vecs[value].value.begin() + stoll(ind.value));
+            vector <string> v = vecs[value].value;
+            reverse(v.begin(), v.end());
+            vecs[value].value = v;
+        }
+    }
+    else if (namef == "sort") {
+        elem var = func_args[0];
+
+        check_valid(var.value, stroke);
+        string value = var.value;
+
+        if (vars[value].type == "string") {
+            string s = vars[value].value;
+            sort(s.begin(), s.end());
+            vars[value].value = s;
+        }
+        else {
+            if (vecs.find(value) == vecs.end()) {
+                cout << "Line: " << stroke << endl;
+                cout << "NameError: Vector \"" << value << "\" not found." << endl;
+                exit(0);
+            }
+
+            if (vecs[value].type == "int")
+            {
+                vector <string> v;
+                vector <ll> nn;
+                for (auto i : vecs[value].value) {
+                    nn.push_back(stoll(i));
+                }
+                sort(nn.begin(), nn.end());
+                for (auto i : nn) {
+                    v.push_back(to_string(i));
+                }
+                vecs[value].value = v;
+            }
+            else if (vecs[value].type == "float") {
+                vector <string> v;
+                vector <ll> nn;
+                for (auto i : vecs[value].value) {
+                    nn.push_back(stod(i));
+                }
+                sort(nn.begin(), nn.end());
+                for (auto i : nn) {
+                    v.push_back(to_string(i));
+                }
+                vecs[value].value = v;
+            }
+            else {
+                vector <string> v = vecs[value].value;
+                sort(v.begin(), v.end());
+                vecs[value].value = v;
+            }
+        }
+    }
+    else if (namef == "swap") {
+        elem a = func_args[0];
+        elem b = func_args[1];
+
+        if (a.type != "variable" or b.type != "variable") {
+            cout << "Line: " << stroke << endl;
+            cout << "SyntaxError: Function accepts only variables." << endl;
+            exit(0);
+        }
+
+        check_valid(a.value, stroke);
+        string atype = vars[a.value].type;
+
+        check_valid(b.value, stroke);
+        string btype = vars[b.value].type;
+
+        if (atype != btype) {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variables \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
+            exit(0);
+        }
+
+        swap(vars[a.value].value, vars[b.value].value);
+    }
+    else if (namef == "find") {
+        elem var = func_args[0];
+        elem vec = func_args[1];
+        elem el = func_args[2];
+
+        check_valid(var.value, stroke);
+        check_valid(vec.value, stroke);
+        vec = vars[vec.value];
+
+        if (el.type == "variable") {
+            check_valid(el.value, stroke);
+            el = vars[el.value];
+        }
+
+        if (vars[var.value].type != "int") {
+            cout << "Line: " << stroke << endl;
+            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be int." << endl;
+            exit(0);
+        }
+
+        if (vec.type == "string") {
+            if (el.type != "string") {
+                cout << "Line: " << stroke << endl;
+                cout << "TypeError: \"" << el.value << "\" is " << el.type << " but must be string." << endl;
+                exit(0);
+            }
+
+            auto pos = vec.value.find(el.value);
+            if (pos != string::npos) {
+                vars[var.value].value = to_string(pos);
+            }
+            else {
+                vars[var.value].value = "-1";
+            }
+        }
+        else {
+            if (vecs.find(vec.value) == vecs.end()) {
+                cout << "Line: " << stroke << endl;
+                cout << "NameError: Vector \"" << vec.value << "\" not found." << endl;
+                exit(0);
+            }
+            ::vec vect = vecs[vec.value];
+
+            if (el.type != vect.type) {
+                cout << "Line: " << stroke << endl;
+                cout << "TypeError: \"" << el.value << "\" is " << el.type << " but must be " << vect.type << "." << endl;
+                exit(0);
+            }
+
+            auto pos = find(vect.value.begin(), vect.value.end(), el.value);
+            if (pos != vect.value.end()) {
+                vars[var.value].value = std::to_string(pos - vect.value.begin());
+            }
+            else {
+                vars[var.value].value = "-1";
+            }
         }
     }
     else {
