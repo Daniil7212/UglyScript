@@ -65,7 +65,7 @@ void init_standard_funcs() {
     args["or"] = 3; standard.insert("or");
     args["if"] = 3; standard.insert("if");
     args["while"] = 2; standard.insert("while");
-    args["for"] = 3; standard.insert("for");
+    args["foreach"] = 3; standard.insert("foreach");
     args["push"] = 2; standard.insert("push");
     args["pop"] = 1; standard.insert("pop");
     args["get"] = 3; standard.insert("get");
@@ -79,10 +79,28 @@ void init_standard_funcs() {
 }
 
 // проверка существует ли такая переменная
-void check_valid(string var, ll stroke) {
-    if (vars.find(var) == vars.end()) {
+void check_valid_var(string namef, ll stroke) {
+    if (vars.find(namef) == vars.end()) {
         cout << "Line: " << stroke << endl;
-        cout << "NameError: Variable \"" << var << "\" not found." << endl;
+        cout << "NameError: Variable \"" << namef << "\" not found." << endl;
+        exit(0);
+    }
+}
+
+// проверка существует ли такая функция
+void check_valid_func(string namef, ll stroke) {
+    if (funcs.find(namef) == funcs.end()) {
+        cout << "Line: " << stroke << endl;
+        cout << "NameError: Function \"" << namef << "\" not found." << endl;
+        exit(0);
+    }
+}
+
+// проверка существует ли такой вектор
+void check_valid_vec(string name, ll stroke) {
+    if (vecs.find(name) == vecs.end()) {
+        cout << "Line: " << stroke << endl;
+        cout << "NameError: Vector \"" << name << "\" not found." << endl;
         exit(0);
     }
 }
@@ -96,10 +114,83 @@ void check_index(ll index, ll size, ll stroke) {
     }
 }
 
-// проверка индекса
+// проверка деления на ноль
+void check_division_zero(string n, ll stroke) {
+    if (n == "0") {
+        cout << "Line: " << stroke << endl;
+        cout << "SyntaxError: Division by 0." << endl;
+        exit(0);
+    }
+}
+
+// проверка существует ли такой тип данных
+void check_type_exist(string type, ll stroke) {
+    if (type != "int" and type != "string" and type != "bool" and type != "float") {
+        cout << "Line: " << stroke << endl;
+        cout << "TypeError: Type of data \"" << type << "\" does not exist." << endl;
+        exit(0);
+    }
+}
+
+// проверка одинаковы ли типы данных
+void check_same_types(elem a, elem b, ll stroke) {
+    if (a.type != b.type) {
+        cout << "Line: " << stroke << endl;
+        cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
+        exit(0);
+    }
+}
+
+// проверка верный ли тип данных
+void check_type(elem val, string correct_type, ll stroke) {
+    if (val.type != correct_type) {
+        cout << "Line: " << stroke << endl;
+        cout << "TypeError: \"" << val.value << "\" is " << val.type << " but must be " << correct_type << "." << endl;
+        exit(0);
+    }
+}
+
+// проверка верный ли тип данных у переменной
+void check_type_var(string name, string correct_type, ll stroke) {
+    if (vars[name].type != correct_type) {
+        cout << "Line: " << stroke << endl;
+        cout << "TypeError: Variable \"" << name << "\" is " << vars[name].type << " but must be " << correct_type << "." << endl;
+        exit(0);
+    }
+}
+
+// ошибка: функция не поддерживает тип
 void error_func_wrong_type(string namef, string type, ll stroke) {
     cout << "Line: " << stroke << endl;
-    cout << "SyntaxError: Function \"" << namef << "\" does not support \"" << type <<"\"." << endl;
+    cout << "TypeError: Function \"" << namef << "\" does not support type \"" << type <<"\"." << endl;
+    exit(0);
+}
+
+// ошибка: должно быть функцией
+void error_must_be_func(string value, ll stroke) {
+    cout << "Line: " << stroke << endl;
+    cout << "SyntaxError: \"" << value << "\" must be function." << endl;
+    exit(0);
+}
+
+// ошибка: должно быть функцией
+void error_cannot_convert(string value, string type, ll stroke) {
+    cout << "Line: " << stroke << endl;
+    cout << "TypeError: Cannot convert \"" << value << "\" to " << type << "." << endl;
+    exit(0);
+}
+
+// ошибка: неправильный тип данных получен из ввода
+void error_input_type(string value, string type, ll stroke) {
+    cout << "Line: " << stroke << endl;
+    cout << "TypeError: Value \"" << value << "\" from the input is not " << type << "." << endl;
+    exit(0);
+}
+
+// ошибка: неизвестный тип данных в аргументах
+void error_arg_type(string value, ll stroke) {
+    cout << "Line: " << stroke << endl;
+    cout << "TypeError: \"" << value << "\" has an unknown data type.";
     exit(0);
 }
 
@@ -114,7 +205,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     if (namef == "print") {
         elem out = func_args[0];
         if (out.type == "variable") {
-            check_valid(out.value, stroke);
+            check_valid_var(out.value, stroke);
             out = vars[out.value];
         }
 
@@ -134,7 +225,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     else if (namef == "println") {
         elem out = func_args[0];
         if (out.type == "variable") {
-            check_valid(out.value, stroke);
+            check_valid_var(out.value, stroke);
             out = vars[out.value];
         }
 
@@ -156,16 +247,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "input") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
 
         string s;
         cin >> s;
         if (vars[var].type == "int") {
             for (int i = 0; i < s.size(); i++) {
                 if (!(s[i] >= '0' && s[i] <= '9') and !(s[i] == '-' and i == 0)) {
-                    cout << "Line: " << stroke << endl;
-                    cout << "TypeError: \"" << s << "\" is not int." << endl;
-                    exit(0);
+                    error_input_type(s, "int", stroke);
                 }
             }
         }
@@ -175,33 +264,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 if (!(s[i] >= '0' && s[i] <= '9')) {
                     if (s[i] == '-') {
                         if (i != 0) {
-                            cout << "Line: " << stroke << endl;
-                            cout << "TypeError: \"" << s << "\" is not float." << endl;
-                            exit(0);
+                            error_input_type(s, "float", stroke);
                         }
                     }
                     else if (s[i] == '.' and cnt == 0) {
                         if (i != 0 and s[i - 1] == '-') {
-                            cout << "Line: " << stroke << endl;
-                            cout << "TypeError: \"" << s << "\" is not float." << endl;
-                            exit(0);
+                            error_input_type(s, "float", stroke);
                         }
                         s[i] = ',';
                         cnt = 1;
                     }
                     else {
-                        cout << "Line: " << stroke << endl;
-                        cout << "TypeError: \"" << s << "\" is not float." << endl;
-                        exit(0);
+                        error_input_type(s, "float", stroke);
                     }
                 }
             }
         }
         else if (vars[var].type == "bool") {
             if (s != "true" and s != "false") {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: \"" << s << "\" is not bool." << endl;
-                exit(0);
+                error_input_type(s, "bool", stroke);
             }
         }
         else if (vars[var].type == "string") {
@@ -214,7 +295,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "inputln") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
 
         string s;
         getline(cin, s);
@@ -234,27 +315,21 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             cout << "NameError: Variable \"" << name << "\" has already been initialized." << endl;
             exit(0);
         }
-        if (type != "int" and type != "string" and type != "bool" and type != "float") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Type of data \"" << type << "\" does not exist." << endl;
-            exit(0);
-        }
+        check_type_exist(type, stroke);
+
         vars[name] = { type, "" };
     }
     else if (namef == "set") {
         elem var = func_args[0];
         elem val = func_args[1];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         if (val.type == "variable") {
-            check_valid(val.value, stroke);
+            check_valid_var(val.value, stroke);
             val = vars[val.value];
         }
-        if (val.type != vars[var.value].type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << val.value << "\" is " << val.type << " but must be " << vars[var.value].type << "." << endl;
-            exit(0);
-        }
+
+        check_type(val, vars[var.value].type, stroke);
 
         if (val.type == "vector") {
             vecs[var.value] = vecs[val.value];
@@ -265,7 +340,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "delete") {
         elem var = func_args[0];
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         if (var.type == "vector") {
             vecs.erase(var.value);
         }
@@ -276,31 +351,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         string name = func_args[1].value;
         if (vars.find(name) != vars.end()) {
             cout << "Line: " << stroke << endl;
-            cout << "NameError: Variable \"" << name << "\" has already been initialized." << endl;
+            cout << "NameError: Vector \"" << name << "\" has already been initialized." << endl;
             exit(0);
         }
-        if (type != "int" and type != "string" and type != "bool" and type != "float") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Type of data \"" << type << "\" does not exist." << endl;
-            exit(0);
-        }
+        check_type_exist(type, stroke);
+
         vars[name] = { "vector", name };
         vecs[name].type = type;
         vecs[name].value = {};
     }
     else if (namef == "to_int") {
         elem var = func_args[0];
-        check_valid(var.value, stroke);
-        if (vars[var.value].type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be int." << endl;
-            exit(0);
-        }
+        check_valid_var(var.value, stroke);
+
+        check_type_var(var.value, "int", stroke);
 
         elem num = func_args[1];
         elem n;
         if (num.type == "variable") {
-            check_valid(num.value, stroke);
+            check_valid_var(num.value, stroke);
             n = vars[num.value];
         }
         else {
@@ -328,9 +397,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         else if (n.type == "string") {
             for (auto i : n.value) {
                 if (!(i >= '0' and i <= '9')) {
-                    cout << "Line: " << stroke << endl;
-                    cout << "TypeError: Cannot convert \"" << n.value << "\" to int." << endl;
-                    exit(0);
+                    error_cannot_convert(n.value, "int", stroke);
                 }
             }
 
@@ -342,16 +409,13 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "to_string") {
         elem var = func_args[0];
-        check_valid(var.value, stroke);
-        if (vars[var.value].type != "string") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be string." << endl;
-            exit(0);
-        }
+        check_valid_var(var.value, stroke);
+
+        check_type_var(var.value, "string", stroke);
 
         elem num = func_args[1], n;
         if (num.type == "variable") {
-            check_valid(num.value, stroke);
+            check_valid_var(num.value, stroke);
             n = vars[num.value];
         }
         else {
@@ -366,17 +430,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "to_bool") {
         elem var = func_args[0];
-        check_valid(var.value, stroke);
-        if (vars[var.value].type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var.value, stroke);
+
+        check_type_var(var.value, "bool", stroke);
 
         elem num = func_args[1];
         elem n;
         if (num.type == "variable") {
-            check_valid(num.value, stroke);
+            check_valid_var(num.value, stroke);
             n = vars[num.value];
         }
         else {
@@ -396,9 +457,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 vars[var.value].value = n.value;
             }
             else {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Cannot convert \"" << n.value << "\" to bool." << endl;
-                exit(0);
+                error_cannot_convert(n.value, "bool", stroke);
             }
         }
         else {
@@ -407,17 +466,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "to_float") {
         elem var = func_args[0];
-        check_valid(var.value, stroke);
-        if (vars[var.value].type != "float") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be float." << endl;
-            exit(0);
-        }
+        check_valid_var(var.value, stroke);
+
+        check_type_var(var.value, "float", stroke);
 
         elem num = func_args[1];
         elem n;
         if (num.type == "variable") {
-            check_valid(num.value, stroke);
+            check_valid_var(num.value, stroke);
             n = vars[num.value];
         }
         else {
@@ -435,15 +491,11 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                     i = ',';
                 }
                 else if (!(i >= '0' and i <= '9')) {
-                    cout << "Line: " << stroke << endl;
-                    cout << "TypeError: Cannot convert \"" << n.value << "\" to float." << endl;
-                    exit(0);
+                    error_cannot_convert(n.value, "float", stroke);
                 }
             }
             if (cnt != 1) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Cannot convert \"" << n.value << "\" to float." << endl;
-                exit(0);
+                error_cannot_convert(n.value, "float", stroke);
             }
 
             vars[var.value].value = n.value;
@@ -454,22 +506,19 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "size") {
         elem var = func_args[0];
-        check_valid(var.value, stroke);
-        if (vars[var.value].type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be int." << endl;
-            exit(0);
-        }
+        check_valid_var(var.value, stroke);
+
+        check_type_var(var.value, "int", stroke);
 
         elem num = func_args[1], n;
         if (num.type == "variable") {
-            check_valid(num.value, stroke);
+            check_valid_var(num.value, stroke);
             n = vars[num.value];
         }
         else {
             n = num;
         }
-        
+
         if (n.type == "string" or n.type == "int") {
             vars[var.value].value = to_string((n.value).size());
         }
@@ -486,57 +535,39 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         cout.tie(nullptr);
     }
     else if (namef == "pass") {
-        
+
     }
     else if (namef == "exit") {
         exit(0);
     }
     else if (namef == "plus") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
         string type = vars[var].type;
 
         elem a = func_args[1];
         elem b = func_args[2];
 
         if (a.type == "variable") {
-            a.type = vars[a.value].type;
+            check_valid_var(a.value, stroke);
 
-            check_valid(a.value, stroke);
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(a.value, type, stroke);
 
-            a.value = vars[a.value].value;
+            a = vars[a.value];
         }
         else {
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << a.value << " is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(a, type, stroke);
         }
 
         if (b.type == "variable") {
-            b.type = vars[b.value].type;
+            check_valid_var(b.value, stroke);
 
-            check_valid(b.value, stroke);
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(b.value, type, stroke);
 
-            b.value = vars[b.value].value;
+            b = vars[b.value];
         }
         else {
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << b.value << " is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(b, type, stroke);
         }
 
         if (type == "string") {
@@ -554,50 +585,32 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "minus") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
         string type = vars[var].type;
 
         elem a = func_args[1];
         elem b = func_args[2];
 
         if (a.type == "variable") {
-            a.type = vars[a.value].type;
+            check_valid_var(a.value, stroke);
 
-            check_valid(a.value, stroke);
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(a.value, type, stroke);
 
-            a.value = vars[a.value].value;
+            a = vars[a.value];
         }
         else {
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << a.value << " is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(a, type, stroke);
         }
 
         if (b.type == "variable") {
-            b.type = vars[b.value].type;
+            check_valid_var(b.value, stroke);
 
-            check_valid(b.value, stroke);
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(b.value, type, stroke);
 
-            b.value = vars[b.value].value;
+            b = vars[b.value];
         }
         else {
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << b.value << " is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(b, type, stroke);
         }
 
         if (type == "int") {
@@ -612,50 +625,32 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "multiply") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
         string type = vars[var].type;
 
         elem a = func_args[1];
         elem b = func_args[2];
 
         if (a.type == "variable") {
-            a.type = vars[a.value].type;
+            check_valid_var(a.value, stroke);
 
-            check_valid(a.value, stroke);
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(a.value, type, stroke);
 
-            a.value = vars[a.value].value;
+            a = vars[a.value];
         }
         else {
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << a.value << " is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(a, type, stroke);
         }
 
         if (b.type == "variable") {
-            b.type = vars[b.value].type;
+            check_valid_var(b.value, stroke);
 
-            check_valid(b.value, stroke);
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(b.value, type, stroke);
 
-            b.value = vars[b.value].value;
+            b = vars[b.value];
         }
         else {
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << b.value << " is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(b, type, stroke);
         }
 
         if (type == "int") {
@@ -670,57 +665,35 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "divide") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
         string type = vars[var].type;
 
         elem a = func_args[1];
         elem b = func_args[2];
 
         if (a.type == "variable") {
-            a.type = vars[a.value].type;
+            check_valid_var(a.value, stroke);
 
-            check_valid(a.value, stroke);
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(a.value, type, stroke);
 
-            a.value = vars[a.value].value;
+            a = vars[a.value];
         }
         else {
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << a.value << " is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(a, type, stroke);
         }
 
         if (b.type == "variable") {
-            b.type = vars[b.value].type;
+            check_valid_var(b.value, stroke);
 
-            check_valid(b.value, stroke);
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(b.value, type, stroke);
 
-            b.value = vars[b.value].value;
+            b = vars[b.value];
         }
         else {
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << b.value << " is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(b, type, stroke);
         }
 
-        if (b.value == "0") {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Division by 0." << endl;
-            exit(0);
-        }
+        check_division_zero(b.value, stroke);
 
         if (type == "int") {
             vars[var].value = to_string(stoll(a.value) / stoll(b.value));
@@ -734,57 +707,35 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "remainder") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
         string type = vars[var].type;
 
         elem a = func_args[1];
         elem b = func_args[2];
 
         if (a.type == "variable") {
-            a.type = vars[a.value].type;
+            check_valid_var(a.value, stroke);
 
-            check_valid(a.value, stroke);
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(a.value, type, stroke);
 
-            a.value = vars[a.value].value;
+            a = vars[a.value];
         }
         else {
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << a.value << " is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(a, type, stroke);
         }
 
         if (b.type == "variable") {
-            b.type = vars[b.value].type;
+            check_valid_var(b.value, stroke);
 
-            check_valid(b.value, stroke);
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << b.value << "\" is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(b.value, type, stroke);
 
-            b.value = vars[b.value].value;
+            b = vars[b.value];
         }
         else {
-            if (b.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << b.value << " is " << b.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(b, type, stroke);
         }
 
-        if (b.value == "0") {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Division by 0." << endl;
-            exit(0);
-        }
+        check_division_zero(b.value, stroke);
 
         if (type == "int") {
             vars[var].value = to_string(stoll(a.value) % stoll(b.value));
@@ -795,35 +746,26 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     }
     else if (namef == "abs") {
         string var = func_args[0].value;
-        check_valid(var, stroke);
+        check_valid_var(var, stroke);
         string type = vars[var].type;
 
         elem a = func_args[1];
 
         if (type != "int" and type != "float") {
             cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int." << endl;
+            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be int or float." << endl;
             exit(0);
         }
 
         if (a.type == "variable") {
-            a.type = vars[a.value].type;
+            check_valid_var(a.value, stroke);
 
-            check_valid(a.value, stroke);
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: Variable \"" << a.value << "\" is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type_var(a.value, type, stroke);
 
-            a.value = vars[a.value].value;
+            a = vars[a.value];
         }
         else {
-            if (a.type != type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: " << a.value << " is " << a.type << " but must be " << type << "." << endl;
-                exit(0);
-            }
+            check_type(a, type, stroke);
         }
 
         if (type == "int") {
@@ -842,33 +784,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            check_valid(a.value, stroke);
+            check_valid_var(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            check_valid(b.value, stroke);
+            check_valid_var(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
 
-        if (a.type != b.type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
-            exit(0);
-        }
+        check_same_types(a, b, stroke);
 
         if (a.type == "vector") {
             if (vecs[a.value].value == vecs[b.value].value and vecs[a.value].type == vecs[b.value].type) {
@@ -890,26 +824,18 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         string type = vars[var].type;
         elem a = func_args[1];
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            check_valid(a.value, stroke);
+            check_valid_var(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
 
-        if (a.type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
-            exit(0);
-        }
+        check_type(a, "bool", stroke);
 
         if (a.value == "true") {
             vars[var].value = "false";
@@ -924,33 +850,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            check_valid(a.value, stroke);
+            check_valid_var(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            check_valid(b.value, stroke);
+            check_valid_var(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
 
-        if (a.type != b.type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
-            exit(0);
-        }
+        check_same_types(a, b, stroke);
 
         if (a.type == "string") {
             if (a.value < b.value) {
@@ -997,33 +915,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            check_valid(a.value, stroke);
+            check_valid_var(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            check_valid(b.value, stroke);
+            check_valid_var(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
 
-        if (a.type != b.type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
-            exit(0);
-        }
+        check_same_types(a, b, stroke);
 
         if (a.type == "string") {
             if (a.value <= b.value) {
@@ -1075,33 +985,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            check_valid(a.value, stroke);
+            check_valid_var(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            check_valid(b.value, stroke);
+            check_valid_var(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
 
-        if (a.type != b.type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
-            exit(0);
-        }
+        check_same_types(a, b, stroke);
 
         if (a.type == "string") {
             if (a.value > b.value) {
@@ -1148,33 +1050,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem a = func_args[1];
         elem b = func_args[2];
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
         if (a.type == "variable") {
             a.type = vars[a.value].type;
 
-            check_valid(a.value, stroke);
+            check_valid_var(a.value, stroke);
 
             a.value = vars[a.value].value;
         }
         if (b.type == "variable") {
             b.type = vars[b.value].type;
 
-            check_valid(b.value, stroke);
+            check_valid_var(b.value, stroke);
 
             b.value = vars[b.value].value;
         }
 
-        if (a.type != b.type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
-            exit(0);
-        }
+        check_same_types(a, b, stroke);
 
         if (a.type == "string") {
             if (a.value >= b.value) {
@@ -1225,45 +1119,23 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         string type = vars[var].type;
         elem a = func_args[1];
         elem b = func_args[2];
-        string atype;
-        string avalue;
-        string btype;
-        string bvalue;
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
-        if (a.type == "variable") {
-            atype = vars[a.value].type;
+        check_valid_var(a.value, stroke);
+        string aname = a.value;
 
-            check_valid(a.value, stroke);
+        check_valid_var(b.value, stroke);
+        string bname = b.value;
 
-            avalue = vars[a.value].value;
-        }
-        if (b.type == "variable") {
-            btype = vars[b.value].type;
+        check_type_var(aname, "bool", stroke);
+        check_type_var(bname, "bool", stroke);
 
-            check_valid(b.value, stroke);
+        a = vars[a.value];
+        b = vars[b.value];
 
-            bvalue = vars[b.value].value;
-        }
-
-        if (atype != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
-            exit(0);
-        }
-        if (btype != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << b.value << "\" must be bool." << endl;
-            exit(0);
-        }
-
-        if (bvalue == "true" and avalue == "true") {
+        if (b.value == "true" and a.value == "true") {
             vars[var].value = "true";
         }
         else {
@@ -1275,45 +1147,23 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         string type = vars[var].type;
         elem a = func_args[1];
         elem b = func_args[2];
-        string atype;
-        string avalue;
-        string btype;
-        string bvalue;
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
-        if (a.type == "variable") {
-            atype = vars[a.value].type;
+        check_valid_var(a.value, stroke);
+        string aname = a.value;
 
-            check_valid(a.value, stroke);
+        check_valid_var(b.value, stroke);
+        string bname = b.value;
 
-            avalue = vars[a.value].value;
-        }
-        if (b.type == "variable") {
-            btype = vars[b.value].type;
+        check_type_var(aname, "bool", stroke);
+        check_type_var(bname, "bool", stroke);
 
-            check_valid(b.value, stroke);
+        a = vars[a.value];
+        b = vars[b.value];
 
-            bvalue = vars[b.value].value;
-        }
-
-        if (atype != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
-            exit(0);
-        }
-        if (btype != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << b.value << "\" must be bool." << endl;
-            exit(0);
-        }
-
-        if (bvalue == "false" and avalue == "false") {
+        if (b.value == "false" and a.value == "false") {
             vars[var].value = "false";
         }
         else {
@@ -1325,49 +1175,27 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         string type = vars[var].type;
         elem a = func_args[1];
         elem b = func_args[2];
-        string atype;
-        string avalue;
-        string btype;
-        string bvalue;
 
-        check_valid(var, stroke);
-        if (type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
 
-        if (a.type == "variable") {
-            atype = vars[a.value].type;
+        check_valid_var(a.value, stroke);
+        string aname = a.value;
 
-            check_valid(a.value, stroke);
+        check_valid_var(b.value, stroke);
+        string bname = b.value;
 
-            avalue = vars[a.value].value;
-        }
-        if (b.type == "variable") {
-            btype = vars[b.value].type;
+        check_type_var(aname, "bool", stroke);
+        check_type_var(bname, "bool", stroke);
 
-            check_valid(b.value, stroke);
+        a = vars[a.value];
+        b = vars[b.value];
 
-            bvalue = vars[b.value].value;
-        }
-
-        if (atype != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << a.value << "\" must be bool." << endl;
-            exit(0);
-        }
-        if (btype != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << b.value << "\" must be bool." << endl;
-            exit(0);
-        }
-
-        if (bvalue == avalue) {
-            vars[var].value = "false";
+        if (b.value != a.value) {
+            vars[var].value = "true";
         }
         else {
-            vars[var].value = "true";
+            vars[var].value = "false";
         }
     }
     else if (namef == "if") {
@@ -1375,41 +1203,23 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem f = func_args[1];
         elem g = func_args[2];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
-        string type = var.type;
 
-
-        if (vars[value].type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << value << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_type_var(value, "bool", stroke);
 
         if (f.type == "variable") {
-            if (funcs.find(f.value) == funcs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Function \"" << f.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_func(f.value, stroke);
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: \"" << f.value << "\" must be function." << endl;
-            exit(0);
+            error_must_be_func(f.value, stroke);
         }
 
         if (g.type == "variable") {
-            if (funcs.find(g.value) == funcs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Function \"" << g.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_func(g.value, stroke);
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: \"" << g.value << "\" must be function." << endl;
-            exit(0);
+            error_must_be_func(g.value, stroke);
         }
 
         if (vars[value].value == "true") {
@@ -1423,70 +1233,44 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem var = func_args[0];
         elem f = func_args[1];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
-        string type = var.type;
 
-
-        if (vars[value].type != "bool") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << value << "\" is " << type << " but must be bool." << endl;
-            exit(0);
-        }
+        check_type_var(value, "bool", stroke);
 
         if (f.type == "variable") {
-            if (funcs.find(f.value) == funcs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Function \"" << f.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_func(f.value, stroke);
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: \"" << f.value << "\" must be function." << endl;
-            exit(0);
+            error_must_be_func(f.value, stroke);
         }
 
         while (vars[value].value == "true") {
             run(f.value, {}, func_line[f.value]);
         }
     }
-    else if (namef == "for") {
+    else if (namef == "foreach") {
         elem var = func_args[0];
         elem vec = func_args[1];
         elem f = func_args[2];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
         string type = var.type;
 
-        check_valid(var.value, stroke);
-        check_valid(vec.value, stroke);
+        check_valid_var(var.value, stroke);
+        check_valid_var(vec.value, stroke);
 
-        if (vecs.find(vec.value) == vecs.end()) {
-            cout << "Line: " << stroke << endl;
-            cout << "NameError: Vector \"" << vec.value << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid_vec(vec.value, stroke);
 
         if (f.type == "variable") {
-            if (funcs.find(f.value) == funcs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Function \"" << f.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_func(f.value, stroke);
         }
         else {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: \"" << f.value << "\" must be function." << endl;
-            exit(0);
+            error_must_be_func(f.value, stroke);
         }
 
-        if (vecs[vec.value].type != vars[value].type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << value << "\" is " << vars[value].type << " but must be " << vecs[vec.value].type << "." << endl;
-            exit(0);
-        }
+        check_type_var(value, vecs[vec.value].type, stroke);
 
         for (auto i : vecs[vec.value].value) {
             vars[value].value = i;
@@ -1497,26 +1281,18 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem var = func_args[0];
         elem e = func_args[1];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
 
         if (e.type == "variable") {
-            check_valid(e.value, stroke);
+            check_valid_var(e.value, stroke);
             e.type = vars[e.value].type;
             e.value = vars[e.value].value;
         }
 
-        if (vecs.find(value) == vecs.end()) {
-            cout << "Line: " << stroke << endl;
-            cout << "NameError: Vector \"" << value << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid_vec(value, stroke);
 
-        if (e.type != vecs[value].type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << e.value << "\" is " << e.type << " but must be "<< vecs[value].type << "." << endl;
-            exit(0);
-        }
+        check_type(e, vecs[value].type, stroke);
 
         (vecs[value].value).push_back(e.value);
     }
@@ -1524,7 +1300,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     {
         elem var = func_args[0];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
 
         if (vars[value].type == "string") {
@@ -1532,11 +1308,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
         else
         {
-            if (vecs.find(value) == vecs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Vector \"" << value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_vec(value, stroke);
 
             (vecs[value].value).pop_back();
         }
@@ -1546,19 +1318,15 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem vec = func_args[1];
         elem index = func_args[2];
 
-        check_valid(var.value, stroke);
-        check_valid(vec.value, stroke);
+        check_valid_var(var.value, stroke);
+        check_valid_var(vec.value, stroke);
         vec = vars[vec.value];
 
         if (index.type == "variable") {
-            check_valid(index.value, stroke);
+            check_valid_var(index.value, stroke);
             index = vars[index.value];
         }
-        if (index.type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << index.value << "\" is " << index.type << " but must be int." << endl;
-            exit(0);
-        }
+        check_type(index, "int", stroke);
 
         if (vec.type == "string") {
             check_index(stoll(index.value), vec.value.size(), stroke);
@@ -1566,11 +1334,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var.value].value = vec.value[stoll(index.value)];
         }
         else {
-            if (vecs.find(vec.value) == vecs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Vector \"" << vec.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_vec(vec.value, stroke);
 
             check_index(stoll(index.value), vecs[vec.value].value.size(), stroke);
 
@@ -1582,48 +1346,32 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem ind = func_args[1];
         elem e = func_args[2];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
 
         if (e.type == "variable") {
-            check_valid(e.value, stroke);
+            check_valid_var(e.value, stroke);
             e = vars[e.value];
         }
 
         if (ind.type == "variable") {
-            check_valid(ind.value, stroke);
+            check_valid_var(ind.value, stroke);
             ind = vars[ind.value];
         }
 
-        if (ind.type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << ind.value << "\" is " << ind.type << " but must be int." << endl;
-            exit(0);
-        }
+        check_type(ind, "int", stroke);
 
         if (vars[value].type == "string") {
-            if (e.type != "string") {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: \"" << e.value << "\" is " << e.type << " but must be string." << endl;
-                exit(0);
-            }
+            check_type(e, "string", stroke);
 
             check_index(stoll(ind.value), vars[value].value.size(), stroke);
 
             (vars[value].value).insert(stoll(ind.value), e.value);
         }
         else {
-            if (vecs.find(value) == vecs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Vector \"" << value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_vec(value, stroke);
 
-            if (e.type != vecs[value].type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: \"" << e.value << "\" is " << e.type << " but must be "<< vecs[value].type << "." << endl;
-                exit(0);
-            }
+            check_type(e, vecs[value].type, stroke);
 
             check_index(stoll(ind.value), vecs[value].value.size(), stroke);
 
@@ -1635,36 +1383,25 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem ind = func_args[1];
         elem e = func_args[2];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
 
         if (e.type == "variable") {
-            check_valid(e.value, stroke);
+            check_valid_var(e.value, stroke);
             e = vars[e.value];
         }
 
         if (ind.type == "variable") {
-            check_valid(ind.value, stroke);
+            check_valid_var(ind.value, stroke);
             ind = vars[ind.value];
         }
 
-        if (ind.type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << ind.value << "\" is " << ind.type << " but must be int." << endl;
-            exit(0);
-        }
+        check_type(ind, "int", stroke);
 
-        if (vecs.find(value) == vecs.end()) {
-            cout << "Line: " << stroke << endl;
-            cout << "NameError: Vector \"" << value << "\" not found." << endl;
-            exit(0);
-        }
+        check_valid_vec(value, stroke);
 
-        if (e.type != vecs[value].type) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << e.value << "\" is " << e.type << " but must be "<< vecs[value].type << "." << endl;
-            exit(0);
-        }
+        check_type(e, vecs[value].type, stroke);
+
         check_index(stoll(ind.value), vecs[value].value.size(), stroke);
 
         vecs[value].value[stoll(ind.value)] = e.value;
@@ -1673,19 +1410,15 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem var = func_args[0];
         elem ind = func_args[1];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
 
         if (ind.type == "variable") {
-            check_valid(ind.value, stroke);
+            check_valid_var(ind.value, stroke);
             ind = vars[ind.value];
         }
 
-        if (ind.type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: \"" << ind.value << "\" is " << ind.type << " but must be int." << endl;
-            exit(0);
-        }
+        check_type(ind, "int", stroke);
 
         if (vars[value].type == "string") {
             check_index(stoll(ind.value), vars[value].value.size(), stroke);
@@ -1693,11 +1426,8 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             (vars[value].value).erase(vars[value].value.begin() + stoll(ind.value));
         }
         else {
-            if (vecs.find(value) == vecs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Vector \"" << value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_vec(value, stroke);
+
             check_index(stoll(ind.value), vecs[value].value.size(), stroke);
 
             (vecs[value].value).erase(vecs[value].value.begin() + stoll(ind.value));
@@ -1706,7 +1436,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     else if (namef == "reverse") {
         elem var = func_args[0];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
 
         if (vars[value].type == "string") {
@@ -1715,11 +1445,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[value].value = s;
         }
         else {
-            if (vecs.find(value) == vecs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Vector \"" << value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_vec(value, stroke);
 
             vector <string> v = vecs[value].value;
             reverse(v.begin(), v.end());
@@ -1729,7 +1455,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
     else if (namef == "sort") {
         elem var = func_args[0];
 
-        check_valid(var.value, stroke);
+        check_valid_var(var.value, stroke);
         string value = var.value;
 
         if (vars[value].type == "string") {
@@ -1738,11 +1464,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[value].value = s;
         }
         else {
-            if (vecs.find(value) == vecs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Vector \"" << value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_vec(value, stroke);
 
             if (vecs[value].type == "int")
             {
@@ -1782,21 +1504,14 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (a.type != "variable" or b.type != "variable") {
             cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Function accepts only variables." << endl;
+            cout << "SyntaxError: Function \"" << namef << "\" accepts only variables." << endl;
             exit(0);
         }
 
-        check_valid(a.value, stroke);
-        string atype = vars[a.value].type;
+        check_valid_var(a.value, stroke);
+        check_valid_var(b.value, stroke);
 
-        check_valid(b.value, stroke);
-        string btype = vars[b.value].type;
-
-        if (atype != btype) {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variables \"" << a.value << "\" and \"" << b.value << "\" must have the same data types." << endl;
-            exit(0);
-        }
+        check_same_types(vars[a.value], vars[b.value], stroke);
 
         swap(vars[a.value].value, vars[b.value].value);
     }
@@ -1805,27 +1520,19 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         elem vec = func_args[1];
         elem el = func_args[2];
 
-        check_valid(var.value, stroke);
-        check_valid(vec.value, stroke);
+        check_valid_var(var.value, stroke);
+        check_valid_var(vec.value, stroke);
         vec = vars[vec.value];
 
         if (el.type == "variable") {
-            check_valid(el.value, stroke);
+            check_valid_var(el.value, stroke);
             el = vars[el.value];
         }
 
-        if (vars[var.value].type != "int") {
-            cout << "Line: " << stroke << endl;
-            cout << "TypeError: Variable \"" << var.value << "\" is " << vars[var.value].type << " but must be int." << endl;
-            exit(0);
-        }
+        check_type_var(var.value, "int", stroke);
 
         if (vec.type == "string") {
-            if (el.type != "string") {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: \"" << el.value << "\" is " << el.type << " but must be string." << endl;
-                exit(0);
-            }
+            check_type(el, "string", stroke);
 
             auto pos = vec.value.find(el.value);
             if (pos != string::npos) {
@@ -1836,18 +1543,10 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
         }
         else {
-            if (vecs.find(vec.value) == vecs.end()) {
-                cout << "Line: " << stroke << endl;
-                cout << "NameError: Vector \"" << vec.value << "\" not found." << endl;
-                exit(0);
-            }
+            check_valid_vec(vec.value, stroke);
             ::vec vect = vecs[vec.value];
 
-            if (el.type != vect.type) {
-                cout << "Line: " << stroke << endl;
-                cout << "TypeError: \"" << el.value << "\" is " << el.type << " but must be " << vect.type << "." << endl;
-                exit(0);
-            }
+            check_type(el, vect.type, stroke);
 
             auto pos = find(vect.value.begin(), vect.value.end(), el.value);
             if (pos != vect.value.end()) {
@@ -1900,16 +1599,10 @@ vector <elem> string_to_args(string str, ll stroke) {
                         int pnt = 0;
                         for (int k = 0; k < value.size(); k++) {
                             if (value[k] == '-' and k != 0) {
-                                cout << "Line: " << stroke << endl;
-                                cout << "TypeError: \"" << value << "\" has an unknown data type.";
-                                exit(0);
+                                error_arg_type(value, stroke);
                             }
                             if (value[k] == '.') {
-                                if ((k != 0 and value[k - 1] == '.') or k == 0) {
-                                    cout << "Line: " << stroke << endl;
-                                    cout << "TypeError: \"" << value << "\" has an unknown data type.";
-                                    exit(0);
-                                }
+                                error_arg_type(value, stroke);
                                 pnt = 1;
                             }
                         }
