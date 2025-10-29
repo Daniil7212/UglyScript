@@ -41,12 +41,12 @@ void init_standard_funcs() {
     args["create"] = 2; standard.insert("create");
     args["set"] = 2; standard.insert("set");
     args["delete"] = 1; standard.insert("delete");
+    args["swap"] = 2; standard.insert("swap");
     args["vector"] = 2; standard.insert("vector");
     args["to_int"] = 2; standard.insert("to_int");
     args["to_string"] = 2; standard.insert("to_string");
     args["to_bool"] = 2; standard.insert("to_bool");
     args["to_float"] = 2; standard.insert("to_float");
-    args["size"] = 2; standard.insert("size");
     args["fast_input"] = 0; standard.insert("fast_input");
     args["pass"] = 0; standard.insert("pass");
     args["exit"] = 0; standard.insert("exit");
@@ -57,27 +57,28 @@ void init_standard_funcs() {
     args["remainder"] = 3; standard.insert("remainder");
     args["abs"] = 2; standard.insert("abs");
     args["equal"] = 3; standard.insert("equal");
-    args["not"] = 2; standard.insert("not");
     args["<"] = 3; standard.insert("<");
     args["<="] = 3; standard.insert("<=");
     args[">"] = 3; standard.insert(">");
     args[">="] = 3; standard.insert(">=");
     args["and"] = 3; standard.insert("and");
     args["or"] = 3; standard.insert("or");
+    args["xor"] = 3; standard.insert("xor");
+    args["not"] = 2; standard.insert("not");
     args["if"] = 3; standard.insert("if");
     args["while"] = 2; standard.insert("while");
     args["for"] = 4; standard.insert("for");
     args["foreach"] = 3; standard.insert("foreach");
     args["push"] = 2; standard.insert("push");
     args["pop"] = 1; standard.insert("pop");
+    args["size"] = 2; standard.insert("size");
+    args["clear"] = 1; standard.insert("clear");
     args["get"] = 3; standard.insert("get");
     args["insert"] = 3; standard.insert("insert");
     args["change"] = 3; standard.insert("change");
     args["erase"] = 2; standard.insert("erase");
     args["reverse"] = 1; standard.insert("reverse");
-    args["clear"] = 1; standard.insert("clear");
     args["sort"] = 1; standard.insert("sort");
-    args["swap"] = 2; standard.insert("swap");
     args["find"] = 3; standard.insert("find");
 }
 
@@ -216,6 +217,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             for (auto& i : out.value) {
                 if (i == ',') {
                     i = '.';
+                    break;
                 }
             }
         }
@@ -255,13 +257,10 @@ void run(string namef, vector <elem> func_args, ll stroke) {
 
         if (n.type == "variable") {
             check_valid_var(n.value, stroke);
-            check_type_var(n.value, "int", stroke);
             n = vars[out.value];
         }
-        else
-        {
-            check_type(n, "int", stroke);
-        }
+
+        check_type(n, "int", stroke);
 
         if (out.type == "float") {
             string s = out.value;
@@ -371,7 +370,7 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         check_type(val, vars[var.value].type, stroke);
 
         if (val.type == "vector") {
-            vecs[var.value] = vecs[val.value];
+            vecs[var.value].value = vecs[val.value].value;
         }
         else {
             vars[var.value].value = val.value;
@@ -384,6 +383,23 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vecs.erase(var.value);
         }
         vars.erase(var.value);
+    }
+    else if (namef == "swap") {
+        elem a = func_args[0];
+        elem b = func_args[1];
+
+        if (a.type != "variable" or b.type != "variable") {
+            cout << "Line: " << stroke << endl;
+            cout << "SyntaxError: Function \"" << namef << "\" accepts only variables." << endl;
+            exit(0);
+        }
+
+        check_valid_var(a.value, stroke);
+        check_valid_var(b.value, stroke);
+
+        check_same_types(vars[a.value], vars[b.value], stroke);
+
+        swap(vars[a.value].value, vars[b.value].value);
     }
     else if (namef == "vector") {
         string type = func_args[0].value;
@@ -538,31 +554,6 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             }
 
             vars[var.value].value = n.value;
-        }
-        else {
-            error_func_wrong_type(namef, n.type, stroke);
-        }
-    }
-    else if (namef == "size") {
-        elem var = func_args[0];
-        check_valid_var(var.value, stroke);
-
-        check_type_var(var.value, "int", stroke);
-
-        elem num = func_args[1], n;
-        if (num.type == "variable") {
-            check_valid_var(num.value, stroke);
-            n = vars[num.value];
-        }
-        else {
-            n = num;
-        }
-
-        if (n.type == "string" or n.type == "int") {
-            vars[var.value].value = to_string((n.value).size());
-        }
-        else if (n.type == "vector") {
-            vars[var.value].value = to_string((vecs[n.value].value).size());
         }
         else {
             error_func_wrong_type(namef, n.type, stroke);
@@ -856,31 +847,6 @@ void run(string namef, vector <elem> func_args, ll stroke) {
         }
         else {
             vars[var].value = "false";
-        }
-    }
-    else if (namef == "not") {
-        string var = func_args[0].value;
-        string type = vars[var].type;
-        elem a = func_args[1];
-
-        check_valid_var(var, stroke);
-        check_type_var(var, "bool", stroke);
-
-        if (a.type == "variable") {
-            a.type = vars[a.value].type;
-
-            check_valid_var(a.value, stroke);
-
-            a.value = vars[a.value].value;
-        }
-
-        check_type(a, "bool", stroke);
-
-        if (a.value == "true") {
-            vars[var].value = "false";
-        }
-        else {
-            vars[var].value = "true";
         }
     }
     else if (namef == "<") {
@@ -1237,6 +1203,28 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vars[var].value = "false";
         }
     }
+    else if (namef == "not") {
+        string var = func_args[0].value;
+        string type = vars[var].type;
+        elem a = func_args[1];
+
+        check_valid_var(var, stroke);
+        check_type_var(var, "bool", stroke);
+
+        check_valid_var(a.value, stroke);
+        string aname = a.value;
+
+        check_type_var(aname, "bool", stroke);
+
+        a = vars[a.value];
+
+        if (a.value == "true") {
+            vars[var].value = "false";
+        }
+        else {
+            vars[var].value = "true";
+        }
+    }
     else if (namef == "if") {
         elem var = func_args[0];
         elem f = func_args[1];
@@ -1406,6 +1394,50 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             (vecs[value].value).pop_back();
         }
     }
+    else if (namef == "size") {
+        elem var = func_args[0];
+        check_valid_var(var.value, stroke);
+
+        check_type_var(var.value, "int", stroke);
+
+        elem num = func_args[1], n;
+        if (num.type == "variable") {
+            check_valid_var(num.value, stroke);
+            n = vars[num.value];
+        }
+        else {
+            n = num;
+        }
+
+        if (n.type == "string" or n.type == "int") {
+            vars[var.value].value = to_string((n.value).size());
+        }
+        else if (n.type == "vector") {
+            vars[var.value].value = to_string((vecs[n.value].value).size());
+        }
+        else {
+            error_func_wrong_type(namef, n.type, stroke);
+        }
+    }
+    else if (namef == "clear") {
+        elem var = func_args[0];
+
+        check_valid_var(var.value, stroke);
+        string value = var.value;
+
+        if (vars[value].type == "string") {
+            string s = vars[value].value;
+            s.clear();
+            vars[value].value = s;
+        }
+        else {
+            check_valid_vec(value, stroke);
+
+            vector <string> v = vecs[value].value;
+            v.clear();
+            vecs[value].value = v;
+        }
+    }
     else if (namef == "get") {
         elem var = func_args[0];
         elem vec = func_args[1];
@@ -1545,25 +1577,6 @@ void run(string namef, vector <elem> func_args, ll stroke) {
             vecs[value].value = v;
         }
     }
-    else if (namef == "clear") {
-        elem var = func_args[0];
-
-        check_valid_var(var.value, stroke);
-        string value = var.value;
-
-        if (vars[value].type == "string") {
-            string s = vars[value].value;
-            s.clear();
-            vars[value].value = s;
-        }
-        else {
-            check_valid_vec(value, stroke);
-
-            vector <string> v = vecs[value].value;
-            v.clear();
-            vecs[value].value = v;
-        }
-    }
     else if (namef == "sort") {
         elem var = func_args[0];
 
@@ -1609,23 +1622,6 @@ void run(string namef, vector <elem> func_args, ll stroke) {
                 vecs[value].value = v;
             }
         }
-    }
-    else if (namef == "swap") {
-        elem a = func_args[0];
-        elem b = func_args[1];
-
-        if (a.type != "variable" or b.type != "variable") {
-            cout << "Line: " << stroke << endl;
-            cout << "SyntaxError: Function \"" << namef << "\" accepts only variables." << endl;
-            exit(0);
-        }
-
-        check_valid_var(a.value, stroke);
-        check_valid_var(b.value, stroke);
-
-        check_same_types(vars[a.value], vars[b.value], stroke);
-
-        swap(vars[a.value].value, vars[b.value].value);
     }
     else if (namef == "find") {
         elem var = func_args[0];
