@@ -2,7 +2,9 @@
 
 ## Содержание
 
-- [if](#if)
+- [reverse](#reverse)
+- [sort](#sort)
+- [find](#find)
 
 ## reverse
 
