@@ -6,7 +6,7 @@ UglyScript - это максимально костыльный функцион
 
 1. Клонируйте репозиторий или скачайте архив:
     ```bash
-    git clone https://github.com/Daniil7212/jarvis.git
+    git clone https://github.com/Daniil7212/UglyScript.git
     ```
 2. Откройте проект в CLion (в теории можно и в Visual Studio).
 3. Запустите проект.
