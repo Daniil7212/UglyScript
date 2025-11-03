@@ -9,10 +9,10 @@ func g
     println pr
 endf
 func main
+    # main
     vector int v
     push v -100
-    create int p
-    create int pr
+    create int p pr
 
     create int n
     input n
@@ -30,6 +30,13 @@ func main
     find ind v 3
     println ind
 
-    newl
     printf 1.3333 1
+    newl
+
+    create float fl
+    set fl 3.0
+    pow fl fl 10.0
+    create int flo
+    to_int flo fl
+    println flo
 endf
